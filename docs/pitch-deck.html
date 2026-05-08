@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Personal Industry Scout — Pitch Deck</title>
+<style>
+  :root {
+    --canvas: #FAFAF8;
+    --page: #FFFFFF;
+    --ink: #11110F;
+    --graphite: #5C5A55;
+    --ash: #8A867E;
+    --rule: #E6E2D9;
+    --oxblood: #7A1F2B;
+    --serif: ui-serif, "Source Serif 4", Georgia, "Cambria", serif;
+    --sans: ui-sans-serif, system-ui, "Inter", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  }
+  *,*::before,*::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  .deck {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+  .slide {
+    background: var(--page);
+    border: 1px solid var(--rule);
+    padding: 64px 64px;
+    margin: 0 auto 28px;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .slide::before {
+    content: "";
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background: radial-gradient(120% 60% at 50% 0%, rgba(122,31,43,0.018), transparent 60%);
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
+  .bar {
+    display: inline-block; width: 36px; height: 2px;
+    background: var(--oxblood); vertical-align: middle; margin-right: 12px;
+  }
+  h1, h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: var(--ink);
+  }
+  .title h1 { font-size: 88px; line-height: 1.0; }
+  .title em { color: var(--oxblood); font-style: italic; font-weight: 400; }
+  h2 { font-size: 44px; line-height: 1.1; max-width: 18ch; }
+  p {
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--graphite);
+    margin: 18px 0 0;
+    max-width: 60ch;
+  }
+  ul {
+    margin: 28px 0 0; padding: 0; list-style: none;
+  }
+  li {
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--ink);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+    display: flex; gap: 14px; align-items: baseline;
+  }
+  li::before {
+    content: "·";
+    color: var(--oxblood);
+    font-family: var(--mono);
+    font-size: 14px;
+    margin-right: 0;
+  }
+  li:last-child { border-bottom: none; }
+  .seal {
+    width: 88px; height: 88px; border-radius: 9999px;
+    background: radial-gradient(circle at 35% 30%, #9B2A37 0%, #7A1F2B 55%, #5C171F 100%);
+    color: var(--canvas);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-style: italic; font-weight: 600;
+    font-size: 28px; transform: rotate(-6deg);
+    box-shadow: 0 8px 24px -12px rgba(122,31,43,0.35), 0 0 0 1px rgba(122,31,43,0.18);
+  }
+  .seal::after {
+    content: "";
+    position: absolute; inset: 6px;
+    border-radius: 9999px;
+    border: 1px dashed rgba(255,250,240,0.45);
+  }
+  .seal { position: relative; }
+  .footer-row {
+    display: flex; justify-content: space-between; align-items: end;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ash);
+    margin-top: 24px;
+  }
+  .stat {
+    font-family: var(--serif); font-weight: 600;
+    font-size: 56px; line-height: 1.05; letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .stat-label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ash); margin-top: 8px;
+  }
+  .stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 32px; margin-top: 32px;
+  }
+  .toc {
+    position: sticky; top: 0;
+    background: var(--canvas);
+    padding: 24px 0 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--graphite);
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .toc a { color: var(--ink); text-decoration: none; }
+  .toc a:hover { color: var(--oxblood); }
+  @media (max-width: 720px) {
+    .slide { padding: 32px; aspect-ratio: auto; }
+    .title h1 { font-size: 48px; }
+    h2 { font-size: 30px; }
+    .stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <nav class="toc" aria-label="Slides">
+    <a href="#s1">01 Title</a>
+    <a href="#s2">02 Problem</a>
+    <a href="#s3">03 Solution</a>
+    <a href="#s4">04 Why now</a>
+    <a href="#s5">05 Product</a>
+    <a href="#s6">06 Audience</a>
+    <a href="#s7">07 Channels</a>
+    <a href="#s8">08 Unit econ</a>
+    <a href="#s9">09 Roadmap</a>
+    <a href="#s10">10 Ask</a>
+  </nav>
+
+  <!-- 1 — Title -->
+  <section id="s1" class="slide title" aria-labelledby="t1">
+    <div>
+      <p class="kicker"><span class="bar"></span>VOL · 14 · ISSUE · 19 · 2026</p>
+      <h1 id="t1" style="margin-top: 28px;">A research analyst <em>on your desk,</em> every Monday.</h1>
+      <p style="font-family: var(--serif); font-size: 24px; color: var(--ink); margin-top: 36px; max-width: 40ch;">
+        Five minutes. Signed and dated. <span class="kicker" style="font-size:13px;">Personal Industry Scout</span>
+      </p>
+    </div>
+    <div class="footer-row">
+      <span>FILED · NEW YORK · 2026</span>
+      <span class="seal">S</span>
+    </div>
+  </section>
+
+  <!-- 2 — Problem -->
+  <section id="s2" class="slide" aria-labelledby="t2">
+    <div>
+      <p class="kicker"><span class="bar"></span>02 · THE PROBLEM</p>
+      <h2 id="t2" style="margin-top: 24px;">Sunday night, again.</h2>
+      <p>Senior operators spend 30–90 minutes assembling a brief on their industry every Sunday night. They pay for tools that don't write briefs.</p>
+      <ul>
+        <li>Pitchbook is a database, not a briefing.</li>
+        <li>Newsletters write the average reader, not your watchlist.</li>
+        <li>LLMs hallucinate names and dates without a human in the loop.</li>
+        <li>The associate they pay to do the work leaves in March.</li>
+      </ul>
+    </div>
+    <div class="footer-row"><span>02 · 10</span><span>SCOUT · BRIEF · NO. 0247</span></div>
+  </section>
+
+  <!-- 3 — Solution -->
+  <section id="s3" class="slide" aria-labelledby="t3">
+    <div>
+      <p class="kicker"><span class="bar"></span>03 · THE SOLUTION</p>
+      <h2 id="t3" style="margin-top: 24px;">A signed memo. Every Monday at 06:00.</h2>
+      <p>A weekly five-minute briefing on the industry the subscriber actually runs.</p>
+      <ul>
+        <li>Written <em>for them</em>, against the watchlist they signed at intake.</li>
+        <li>Distilled by a named human — every claim cited.</li>
+        <li>Watermarked to the subscriber ID.</li>
+        <li>Cancel any week. No annual lock-in.</li>
+      </ul>
+    </div>
+    <div class="footer-row"><span>03 · 10</span><span>FIVE MINUTES · TO READ</span></div>
+  </section>
+
+  <!-- 4 — Why now -->
+  <section id="s4" class="slide" aria-labelledby="t4">
+    <div>
+      <p class="kicker"><span class="bar"></span>04 · WHY NOW</p>
+      <h2 id="t4" style="margin-top: 24px;">A named human is, suddenly, scarce.</h2>
+      <ul>
+        <li>Stablecoin rails (USDT/USDC) are now mainstream for high-ticket research.</li>
+        <li>LLM-augmented research has cut brief-production cost ~80%.</li>
+        <li>The senior-operator audience has tried "AI research" and rejected it.</li>
+        <li>A named, accountable, signed brand is now the differentiator.</li>
+      </ul>
+    </div>
+    <div class="footer-row"><span>04 · 10</span><span>2026 · MAY</span></div>
+  </section>
+
+  <!-- 5 — Product -->
+  <section id="s5" class="slide" aria-labelledby="t5">
+    <div>
+      <p class="kicker"><span class="bar"></span>05 · THE PRODUCT</p>
+      <h2 id="t5" style="margin-top: 24px;">The hero IS the product.</h2>
+      <p>Five-minute memo · four signal items · signed by the lead scout · source-IDs on every claim.</p>
+      <div class="stats">
+        <div><div class="stat">$95</div><div class="stat-label">OPERATOR · MONTHLY</div></div>
+        <div><div class="stat">$245</div><div class="stat-label">PARTNER · MONTHLY</div></div>
+        <div><div class="stat">$695</div><div class="stat-label">CONCIERGE · MONTHLY</div></div>
+      </div>
+    </div>
+    <div class="footer-row"><span>05 · 10</span><span>USDT · USDC · NOWPAYMENTS</span></div>
+  </section>
+
+  <!-- 6 — Audience -->
+  <section id="s6" class="slide" aria-labelledby="t6">
+    <div>
+      <p class="kicker"><span class="bar"></span>06 · AUDIENCE</p>
+      <h2 id="t6" style="margin-top: 24px;">Mid-cap and below. Senior. Specific.</h2>
+      <ul>
+        <li>VPs of corp-dev · partners · GMs · principals · CIOs · CROs.</li>
+        <li>Hard qualifier: spends ≥$2k/year on research today.</li>
+        <li>Soft qualifier: pays an associate to summarise.</li>
+        <li>Total addressable: ~80–120k buyers in NA · EU · APAC.</li>
+      </ul>
+    </div>
+    <div class="footer-row"><span>06 · 10</span><span>26 · INDUSTRY DESKS</span></div>
+  </section>
+
+  <!-- 7 — Channels -->
+  <section id="s7" class="slide" aria-labelledby="t7">
+    <div>
+      <p class="kicker"><span class="bar"></span>07 · CHANNELS</p>
+      <h2 id="t7" style="margin-top: 24px;">The brief itself is the marketing.</h2>
+      <ul>
+        <li>Peer-forwarded brief — the highest-leverage acquisition channel.</li>
+        <li>Hand-DM on LinkedIn from named scouts.</li>
+        <li>Sample-brief PDFs as lead magnet (one per industry).</li>
+        <li>Four newsletter sponsorships per year.</li>
+        <li>Six closed-door breakfasts per year (NY · LDN · SGP).</li>
+      </ul>
+      <p>No paid Google. No paid Meta. No SEO content. No SDR.</p>
+    </div>
+    <div class="footer-row"><span>07 · 10</span><span>NORTH STAR · FORWARDS</span></div>
+  </section>
+
+  <!-- 8 — Unit econ -->
+  <section id="s8" class="slide" aria-labelledby="t8">
+    <div>
+      <p class="kicker"><span class="bar"></span>08 · UNIT ECONOMICS</p>
+      <h2 id="t8" style="margin-top: 24px;">75% margin at 100 subs / desk.</h2>
+      <div class="stats">
+        <div><div class="stat">$2,940</div><div class="stat-label">ACV · BLENDED · ANNUAL</div></div>
+        <div><div class="stat">~70</div><div class="stat-label">BREAK-EVEN · SUBS / DESK</div></div>
+        <div><div class="stat">~75%</div><div class="stat-label">GROSS MARGIN · 100 / DESK</div></div>
+      </div>
+      <p>Per-desk capacity: 20 subscribers per lead scout per month, before adding an associate. Lead-scout cost loaded: $150–200k / yr.</p>
+    </div>
+    <div class="footer-row"><span>08 · 10</span><span>BLENDED · 60·30·10 MIX</span></div>
+  </section>
+
+  <!-- 9 — Roadmap -->
+  <section id="s9" class="slide" aria-labelledby="t9">
+    <div>
+      <p class="kicker"><span class="bar"></span>09 · ROADMAP</p>
+      <h2 id="t9" style="margin-top: 24px;">From 3 desks to 200 subscribers.</h2>
+      <ul>
+        <li>Q2 · 2026 — 3 desks live. 26 industries covered. Card and wire as second/third payment rails.</li>
+        <li>Q3 · 2026 — Subscriber console (apps/app/) ships. Brief archive + ad-hoc Q&amp;A thread.</li>
+        <li>Q4 · 2026 — Industry Index public scorecard. Multi-seat Partner contracts.</li>
+        <li>2027 — 200+ subscribers. $500k MRR. Exit window opens.</li>
+      </ul>
+    </div>
+    <div class="footer-row"><span>09 · 10</span><span>PRIN7R · WAVE 2</span></div>
+  </section>
+
+  <!-- 10 — Ask -->
+  <section id="s10" class="slide" aria-labelledby="t10">
+    <div>
+      <p class="kicker"><span class="bar"></span>10 · ASK</p>
+      <h2 id="t10" style="margin-top: 24px;">Ten warm intros to a senior buyer.</h2>
+      <p>Founding 25 subscribers in the funnel. Three lead scouts hired and named. The brief is shipping.</p>
+      <p style="font-family: var(--serif); font-size: 22px; color: var(--ink); margin-top: 28px;">
+        — Reply: <span style="text-decoration: underline; text-underline-offset: 4px;">desk@personal-industry-scout.prin7r.com</span>
+      </p>
+      <p style="font-family: var(--mono); font-size: 13px; color: var(--graphite); margin-top: 24px;">
+        Live: personal-industry-scout.prin7r.com<br/>
+        Repo: github.com/prin7r-projects/personal-industry-scout
+      </p>
+    </div>
+    <div class="footer-row"><span>10 · 10</span><span class="seal">S</span></div>
+  </section>
+
+</div>
+
+</body>
+</html>
