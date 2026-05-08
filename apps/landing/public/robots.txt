@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://personal-industry-scout.prin7r.com/sitemap.xml

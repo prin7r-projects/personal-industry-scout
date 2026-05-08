@@ -1,0 +1,18 @@
+services:
+  landing:
+    build:
+      context: .
+      dockerfile: Dockerfile.landing
+    image: personal-industry-scout-landing:latest
+    container_name: personal-industry-scout-landing
+    restart: unless-stopped
+    expose:
+      - "3000"
+    env_file:
+      - .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.personal-industry-scout.rule=Host(`personal-industry-scout.prin7r.com`)"
+      - "traefik.http.routers.personal-industry-scout.entrypoints=websecure"
+      - "traefik.http.routers.personal-industry-scout.tls.certresolver=letsencrypt"
+      - "traefik.http.services.personal-industry-scout.loadbalancer.server.port=3000"

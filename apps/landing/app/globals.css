@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fonts: served via next/font in layout.tsx — these are the variable refs. */
+:root {
+  --font-serif: "Source Serif 4", ui-serif, Georgia, "Cambria", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+html, body {
+  background: #FAFAF8;
+  color: #11110F;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga", "calt", "ss01";
+}
+
+/* the dot leaders we use in the briefing TOC */
+.lead-dots {
+  display: inline-block;
+  flex: 1;
+  border-bottom: 1px dotted #C9C3B5;
+  margin: 0 8px 4px 8px;
+  height: 1px;
+}
+
+/* hairline rule, paper-grain feel */
+.rule-paper {
+  border-top: 1px solid #E6E2D9;
+}
+
+/* a thin oxblood underline used as section opener */
+.bar-oxblood {
+  display: inline-block;
+  width: 36px;
+  height: 2px;
+  background: #7A1F2B;
+}
+
+/* a tiny rotated wax seal accent (CSS-only) */
+.seal {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 30%, #9B2A37 0%, #7A1F2B 55%, #5C171F 100%);
+  color: #FAFAF8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  transform: rotate(-6deg);
+  box-shadow: 0 0 0 1px rgba(122,31,43,0.18), 0 8px 24px -12px rgba(122,31,43,0.35), inset 0 1px 0 rgba(255,255,255,0.18);
+}
+.seal::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 9999px;
+  border: 1px dashed rgba(255, 250, 240, 0.45);
+}
+
+/* memo-card paper */
+.memo-card {
+  background: #FFFFFF;
+  border: 1px solid #E6E2D9;
+  position: relative;
+}
+.memo-card::before {
+  /* faint warm vignette so it reads as paper, not a div */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 60% at 50% 0%, rgba(122,31,43,0.018), transparent 60%);
+}
+
+/* a "REDACTED" mark — used in the example briefing as theatre */
+.redact {
+  background: #11110F;
+  color: #11110F;
+  padding: 0 6px;
+  border-radius: 1px;
+  user-select: none;
+}
+
+/* delicate keyboard focus */
+*:focus-visible {
+  outline: 1px solid #7A1F2B;
+  outline-offset: 2px;
+}
+
+/* selection */
+::selection { background: #7A1F2B; color: #FAFAF8; }
+
+/* utility: inline mono uppercase tag (source ids, timestamps) */
+.tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5C5A55;
+}
+
+/* prevent FOUC for serif italic */
+.italic-serif { font-style: italic; font-family: var(--font-serif); }
