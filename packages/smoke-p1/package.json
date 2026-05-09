@@ -1,0 +1,19 @@
+{
+  "name": "@pis/smoke-p1",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "smoke": "tsx src/smoke.ts"
+  },
+  "dependencies": {
+    "@pis/db": "workspace:*",
+    "@pis/worker-sync-notion": "workspace:*",
+    "@pis/worker-watermark": "workspace:*",
+    "@pis/worker-deliver": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

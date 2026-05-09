@@ -1,0 +1,40 @@
+# Worker: deliver — Monday brief delivery.
+# Triggered via cron on the host: docker compose --profile workers run --rm worker-deliver
+
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
+# Puppeteer deps
+RUN apk add --no-cache \
+  chromium \
+  nss \
+  freetype \
+  harfbuzz \
+  ca-certificates \
+  ttf-freefont
+
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+# Copy workspace config
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY packages/db/package.json packages/db/
+COPY worker/watermark/package.json worker/watermark/
+COPY worker/deliver/package.json worker/deliver/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy source
+COPY packages/db/ packages/db/
+COPY worker/watermark/ worker/watermark/
+COPY worker/deliver/ worker/deliver/
+
+# Generate Prisma client
+RUN cd packages/db && npx prisma generate
+
+ENTRYPOINT ["pnpm", "--filter", "@pis/worker-deliver", "deliver"]
