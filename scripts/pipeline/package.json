@@ -1,0 +1,17 @@
+{
+  "name": "synthtable-pipeline",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "synth": "tsx synth.ts",
+    "smoke": "tsx smoke.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "openai": "^5.23.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}

@@ -35,6 +35,27 @@ services:
       - "traefik.http.routers.personal-industry-scout.tls.certresolver=letsencrypt"
       - "traefik.http.services.personal-industry-scout.loadbalancer.server.port=3000"
 
+  app:
+    build:
+      context: .
+      dockerfile: apps/app/Dockerfile.app
+    image: personal-industry-scout-app:latest
+    container_name: personal-industry-scout-app
+    restart: unless-stopped
+    expose:
+      - "3001"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.personal-industry-scout-console.rule=Host(`stampedagents.prin7r-app.com`)"
+      - "traefik.http.routers.personal-industry-scout-console.entrypoints=websecure"
+      - "traefik.http.routers.personal-industry-scout-console.tls.certresolver=letsencrypt"
+      - "traefik.http.services.personal-industry-scout-console.loadbalancer.server.port=3001"
+
   # Workers — not scheduled inside the container; triggered via cron on host or orchestrator.
   worker-sync-notion:
     build:
@@ -57,6 +78,21 @@ services:
       dockerfile: Dockerfile.worker-deliver
     image: personal-industry-scout-worker-deliver:latest
     container_name: personal-industry-scout-worker-deliver
+    restart: "no"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - workers
+
+  worker-tender-intake:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker-tender-intake
+    image: personal-industry-scout-worker-tender-intake:latest
+    container_name: personal-industry-scout-worker-tender-intake
     restart: "no"
     env_file:
       - .env

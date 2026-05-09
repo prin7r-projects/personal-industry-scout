@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../.. && pnpm install && cd apps/landing && pnpm build",
+  "installCommand": "pnpm install",
+  "outputDirectory": "apps/landing/.next",
+  "framework": "nextjs",
+  "git": {
+    "deploymentEnabled": {
+      "staging": true,
+      "main": false
+    }
+  }
+}
