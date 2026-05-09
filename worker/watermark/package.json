@@ -1,0 +1,22 @@
+{
+  "name": "@pis/worker-watermark",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/watermark.ts",
+  "exports": {
+    ".": "./src/watermark.ts"
+  },
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "puppeteer": "^23.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
