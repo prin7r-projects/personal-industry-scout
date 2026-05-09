@@ -196,3 +196,46 @@ model Item {
   @@index([fetchedAt])
   @@map("items")
 }
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  ownedWorkspaces Workspace[]
+  assets          Asset[]
+
+  @@map("users")
+}
+
+model Workspace {
+  id      String @id @default(uuid()) @db.Uuid
+  name    String
+  ownerId String @map("owner_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  owner  User    @relation(fields: [ownerId], references: [id])
+  assets Asset[]
+
+  @@map("workspaces")
+}
+
+model Asset {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  name        String
+  type        String   // image | video | audio | document
+  url         String
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([workspaceId])
+  @@index([userId])
+  @@map("assets")
+}
