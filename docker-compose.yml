@@ -51,7 +51,7 @@ services:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.personal-industry-scout-console.rule=Host(`stampedagents.prin7r-app.com`)"
+      - "traefik.http.routers.personal-industry-scout-console.rule=Host(`annotedly.prin7r-app.com`)"
       - "traefik.http.routers.personal-industry-scout-console.entrypoints=websecure"
       - "traefik.http.routers.personal-industry-scout-console.tls.certresolver=letsencrypt"
       - "traefik.http.services.personal-industry-scout-console.loadbalancer.server.port=3001"
