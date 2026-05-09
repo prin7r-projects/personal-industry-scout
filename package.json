@@ -1,0 +1,12 @@
+{
+  "name": "personal-industry-scout",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "db:migrate": "pnpm --filter @pis/db run migrate",
+    "db:seed": "pnpm --filter @pis/db run seed",
+    "db:studio": "pnpm --filter @pis/db run studio",
+    "smoke:p1": "pnpm --filter @pis/smoke-p1 run smoke"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

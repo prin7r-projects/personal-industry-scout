@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Subscriber {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  name      String?
+  tz        String   @default("UTC")
+  telegramUserId String? @map("telegram_user_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  subscriptions Subscription[]
+  watchlist      Watchlist?
+  deliveries     Delivery[]
+  tickets        Ticket[]
+
+  @@map("subscribers")
+}
+
+model Subscription {
+  id           String   @id @default(uuid()) @db.Uuid
+  subscriberId String   @map("subscriber_id") @db.Uuid
+  tier         String   @default("operator") // operator | concierge
+  status       String   @default("active") // active | cancelled | expired
+  startsAt     DateTime @default(now()) @map("starts_at") @db.Timestamptz()
+  endsAt       DateTime? @map("ends_at") @db.Timestamptz()
+
+  subscriber Subscriber @relation(fields: [subscriberId], references: [id])
+  orders     Order[]
+
+  @@index([subscriberId, status])
+  @@map("subscriptions")
+}
+
+model Order {
+  id             String   @id @default(uuid()) @db.Uuid
+  subscriptionId String   @map("subscription_id") @db.Uuid
+  invoiceId      String   @unique @map("invoice_id")
+  amountCents    Int      @map("amount_cents")
+  paidAt         DateTime @default(now()) @map("paid_at") @db.Timestamptz()
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@map("orders")
+}
+
+model Watchlist {
+  id           String   @id @default(uuid()) @db.Uuid
+  subscriberId String   @unique @map("subscriber_id") @db.Uuid
+  industries   Json     @default("[]")
+  companies    Json     @default("[]")
+  geos         Json     @default("[]")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  subscriber Subscriber @relation(fields: [subscriberId], references: [id])
+
+  @@map("watchlists")
+}
+
+model Brief {
+  id       String   @id @default(uuid()) @db.Uuid
+  industry String
+  isoweek  Int
+  scoutId  String   @map("scout_id") @db.Uuid
+  status   String   @default("draft") // draft | verifying | signed | delivered
+  bodyMd   String   @map("body_md")
+  signedAt DateTime? @map("signed_at") @db.Timestamptz()
+
+  scout     Scout      @relation(fields: [scoutId], references: [id])
+  citations Citation[]
+  deliveries Delivery[]
+
+  @@index([industry, isoweek])
+  @@map("briefs")
+}
+
+model Citation {
+  id         String    @id @default(uuid()) @db.Uuid
+  briefId    String    @map("brief_id") @db.Uuid
+  citeId     String    @map("cite_id") // C-2026W19-0001
+  url        String
+  title      String
+  verifiedAt DateTime? @map("verified_at") @db.Timestamptz()
+
+  brief Brief @relation(fields: [briefId], references: [id])
+
+  @@map("citations")
+}
+
+model Delivery {
+  id           String   @id @default(uuid()) @db.Uuid
+  briefId      String   @map("brief_id") @db.Uuid
+  subscriberId String   @map("subscriber_id") @db.Uuid
+  channel      String   @default("email") // email | telegram
+  watermarkUuid String  @map("watermark_uuid")
+  artifactUrl  String?  @map("artifact_url")
+  sentAt       DateTime @default(now()) @map("sent_at") @db.Timestamptz()
+
+  brief      Brief      @relation(fields: [briefId], references: [id])
+  subscriber Subscriber @relation(fields: [subscriberId], references: [id])
+
+  @@unique([briefId, subscriberId])
+  @@map("deliveries")
+}
+
+model Scout {
+  id             String @id @default(uuid()) @db.Uuid
+  name           String
+  industryFocus  String @map("industry_focus")
+
+  briefs Brief[]
+
+  @@map("scouts")
+}
+
+model Ticket {
+  id           String    @id @default(uuid()) @db.Uuid
+  subscriberId String    @map("subscriber_id") @db.Uuid
+  body         String
+  response     String?
+  openedAt     DateTime  @default(now()) @map("opened_at") @db.Timestamptz()
+  respondedAt  DateTime? @map("responded_at") @db.Timestamptz()
+
+  subscriber Subscriber @relation(fields: [subscriberId], references: [id])
+
+  @@map("tickets")
+}

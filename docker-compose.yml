@@ -1,4 +1,22 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: personal-industry-scout-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pis
+      POSTGRES_PASSWORD: pis_dev
+      POSTGRES_DB: pis
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pis -d pis"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   landing:
     build:
       context: .
@@ -16,3 +34,37 @@ services:
       - "traefik.http.routers.personal-industry-scout.entrypoints=websecure"
       - "traefik.http.routers.personal-industry-scout.tls.certresolver=letsencrypt"
       - "traefik.http.services.personal-industry-scout.loadbalancer.server.port=3000"
+
+  # Workers — not scheduled inside the container; triggered via cron on host or orchestrator.
+  worker-sync-notion:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker-sync-notion
+    image: personal-industry-scout-worker-sync-notion:latest
+    container_name: personal-industry-scout-worker-sync-notion
+    restart: "no"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - workers
+
+  worker-deliver:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker-deliver
+    image: personal-industry-scout-worker-deliver:latest
+    container_name: personal-industry-scout-worker-deliver
+    restart: "no"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - workers
+
+volumes:
+  pgdata:
