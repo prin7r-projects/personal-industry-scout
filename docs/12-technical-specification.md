@@ -47,7 +47,7 @@ erDiagram
   SUBSCRIPTIONS {
     uuid id PK
     uuid subscriber_id FK
-    text tier "operator|concierge"
+    text tier "operator|partner|concierge"
     text status "active|cancelled|expired"
     timestamptz starts_at
     timestamptz ends_at

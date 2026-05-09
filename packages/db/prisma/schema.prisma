@@ -26,7 +26,7 @@ model Subscriber {
 model Subscription {
   id           String   @id @default(uuid()) @db.Uuid
   subscriberId String   @map("subscriber_id") @db.Uuid
-  tier         String   @default("operator") // operator | concierge
+  tier         String   @default("operator") // operator | partner | concierge
   status       String   @default("active") // active | cancelled | expired
   startsAt     DateTime @default(now()) @map("starts_at") @db.Timestamptz()
   endsAt       DateTime? @map("ends_at") @db.Timestamptz()

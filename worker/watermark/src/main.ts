@@ -4,7 +4,7 @@
  * Usage: npx tsx src/main.ts
  * Expects JSON on stdin: { subscriberEmail, watermarkUuid, briefBodyMd, citations[], ... }
  */
-import { generateWatermarkedPdf } from "./watermark.js";
+import { generateWatermarkedPdf, closeBrowser } from "./watermark.js";
 
 async function main() {
   // Read JSON from stdin
@@ -18,7 +18,11 @@ async function main() {
   process.stdout.write(pdf);
 }
 
-main().catch((err) => {
-  console.error("Watermark generation failed:", err);
-  process.exit(1);
-});
+main()
+  .catch((err) => {
+    console.error("Watermark generation failed:", err);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await closeBrowser();
+  });

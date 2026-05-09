@@ -9,3 +9,5 @@ out/
 .idea/
 .vscode/
 docs/screenshots/.tmp/
+.paperclip-commandcode-smoke
+market-research-on-demand/
