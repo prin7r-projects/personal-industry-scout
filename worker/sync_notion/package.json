@@ -1,0 +1,23 @@
+{
+  "name": "@pis/worker-sync-notion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/sync.ts",
+  "exports": {
+    ".": "./src/sync.ts"
+  },
+  "scripts": {
+    "sync": "tsx src/sync.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "@pis/db": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
