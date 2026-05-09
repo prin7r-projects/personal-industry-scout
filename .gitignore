@@ -5,3 +5,5 @@ dist/
 .turbo/
 prisma/*.db
 prisma/*.db-journal
+brassmark/
+paperclip/

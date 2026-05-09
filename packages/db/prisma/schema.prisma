@@ -21,6 +21,11 @@ model User {
   verifications Verification[]
   watches       Watch[]
   matches       Match[]
+  bots          Bot[]
+  scouts        Scout[]
+  briefs        Brief[]
+  webhookConfigs WebhookConfig[]
+  campaigns     Campaign[]
 }
 
 model Account {
@@ -100,4 +105,105 @@ model Match {
   tender    Tender   @relation(fields: [tenderId], references: [id], onDelete: Cascade)
 
   @@unique([userId, tenderId])
+}
+
+model Tool {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  category  String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  industry  String   @unique
+  name      String
+  slug      String   @unique
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Bot {
+  id            String   @id @default(cuid())
+  name          String
+  systemPrompt  String   @default("")
+  businessHours String   @default("")
+  greeting      String   @default("")
+  fallback      String   @default("")
+  brandColor    String   @default("#4F46E5")
+  userId        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Scout {
+  id        String   @id @default(cuid())
+  userId    String
+  industry  String
+  region    String
+  signals   String   @default("[]")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Brief {
+  id        String   @id @default(cuid())
+  topic     String
+  audience  String
+  weekOf    String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Campaign {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  sent      Int      @default(0)
+  replies   Int      @default(0)
+  opens     Int      @default(0)
+  clicks    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WebhookConfig {
+  id        String   @id @default(cuid())
+  userId    String
+  label     String
+  url       String
+  secret    String
+  events    String   @default("[]")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+}
+
+model WebhookDelivery {
+  id             String        @id @default(cuid())
+  webhookConfigId String
+  eventType      String
+  status         String        @default("pending")
+  attempt        Int           @default(0)
+  maxAttempts    Int           @default(5)
+  nextRetryAt    DateTime?
+  payload        String        @default("{}")
+  responseStatus Int?
+  responseBody   String?
+  error          String?
+  durationMs     Int?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  webhookConfig  WebhookConfig @relation(fields: [webhookConfigId], references: [id], onDelete: Cascade)
 }
