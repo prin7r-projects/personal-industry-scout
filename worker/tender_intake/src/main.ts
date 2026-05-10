@@ -5,6 +5,7 @@
  * Usage: TENDER_SOURCE_URL=https://... [TENDER_INDUSTRY=general] npx tsx src/main.ts
  * Cron:  scheduled externally via docker compose --profile workers run --rm worker-tender-intake
  */
+import type { Prisma } from "@prisma/client";
 import { PrismaClient } from "@pis/db";
 import { fetchTenders } from "./fetch.js";
 
@@ -52,7 +53,7 @@ async function main() {
           url: item.url,
           sourceName,
           publishedAt: item.publishedAt ? new Date(item.publishedAt) : new Date(),
-          metadata: item.metadata as Record<string, unknown>,
+          metadata: item.metadata as Prisma.InputJsonValue,
         },
       });
       created++;
