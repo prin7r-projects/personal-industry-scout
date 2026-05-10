@@ -61,6 +61,7 @@ export function isPlanId(value: unknown): value is PlanId {
 export type CreateInvoiceInput = {
   plan: Plan;
   baseUrl: string;
+  subscriberId: string;
 };
 
 export type NowpaymentsInvoice = {
@@ -68,6 +69,24 @@ export type NowpaymentsInvoice = {
   invoice_url: string;
   raw: Record<string, unknown>;
 };
+
+/**
+ * Extract subscriberId from a NOWPayments order_id.
+ * Format: scout_{plan}_{subscriberId}_{timestamp}_{random}
+ */
+export function extractSubscriberId(orderId: string): string | null {
+  const parts = orderId.split("_");
+  // scout_operator_{uuid}_...
+  if (parts.length >= 3) {
+    // The subscriber UUID is the third segment (after scout_plan)
+    const candidate = parts[2];
+    // UUID v4: 8-4-4-4-12 hex with dashes
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
 
 /**
  * POST https://api.nowpayments.io/v1/invoice — hosted USDT/USDC checkout.
@@ -82,7 +101,7 @@ export async function createNowpaymentsInvoice(
   const sandbox = (optionalEnv("NOWPAYMENTS_SANDBOX") ?? "false").toLowerCase() === "true";
   const apiBase = sandbox ? "https://api-sandbox.nowpayments.io" : "https://api.nowpayments.io";
 
-  const orderId = `scout_${input.plan.id}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const orderId = `scout_${input.plan.id}_${input.subscriberId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   const body = {
     price_amount: input.plan.invoiceUsd,

@@ -10,14 +10,18 @@
  *   401 signature invalid
  *   200 + { ok, paid, order_id, status } on a verified payload
  *
- * On confirmed payments, creates Subscriber + Subscription + Order records.
+ * On confirmed payments, activates the pending subscriber (created at checkout),
+ * creates Subscription + Order records, generates an intake token, and sends
+ * the intake-link email via Postmark.
  * Idempotent — duplicate invoice_ids are silently acknowledged.
  */
 
 import { NextResponse } from "next/server";
 import { optionalEnv } from "@/lib/env";
-import { verifyNowpaymentsIpn, isPlanId, PLANS } from "@/lib/nowpayments";
+import { verifyNowpaymentsIpn, isPlanId, PLANS, extractSubscriberId } from "@/lib/nowpayments";
 import { prisma } from "@/lib/prisma";
+import { generateIntakeToken } from "@/lib/intake-token";
+import { sendIntakeLink } from "@/lib/postmark";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -95,12 +99,24 @@ async function persistOrder(
   const plan = isPlanId(planId) ? PLANS[planId] : PLANS.operator;
   const amountCents = Math.round(parseFloat(stringValue(payload.price_amount) ?? "0") * 100);
 
-  const subscriber = await prisma.subscriber.create({
-    data: {
-      email: `pending-${invoiceId}@pis.pending`,
-      name: `Pending — ${plan.name}`,
-    },
-  });
+  // Try to find the pending subscriber from checkout
+  const subscriberId = extractSubscriberId(orderId);
+  let subscriber = subscriberId
+    ? await prisma.subscriber.findUnique({ where: { id: subscriberId } })
+    : null;
+
+  if (!subscriber) {
+    // Fallback: create a subscriber (legacy orders without checkout-created subscriber)
+    subscriber = await prisma.subscriber.create({
+      data: {
+        email: `pending-${invoiceId}@pis.pending`,
+        name: `Pending — ${plan.name}`,
+      },
+    });
+    console.log(`[SCOUT_NOWPAYMENTS_IPN] created fallback subscriber=${subscriber.id} (no checkout subscriber found)`);
+  } else {
+    console.log(`[SCOUT_NOWPAYMENTS_IPN] found existing subscriber=${subscriber.id} email=${subscriber.email}`);
+  }
 
   const subscription = await prisma.subscription.create({
     data: {
@@ -119,8 +135,24 @@ async function persistOrder(
   });
 
   console.log(
-    `[SCOUT_NOWPAYMENTS_IPN] created subscriber=${subscriber.id} subscription=${subscription.id} plan=${plan.id} amountCents=${amountCents}`
+    `[SCOUT_NOWPAYMENTS_IPN] created subscription=${subscription.id} plan=${plan.id} amountCents=${amountCents}`
   );
+
+  // Generate intake token and send email (skip for fallback subscribers without real email)
+  if (subscriber.email && !subscriber.email.startsWith("pending-")) {
+    try {
+      const intakeToken = generateIntakeToken(subscriber.id);
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://personal-industry-scout.prin7r.com";
+      const intakeUrl = `${baseUrl}/intake/${intakeToken}`;
+
+      const emailResult = await sendIntakeLink(subscriber.email, intakeUrl);
+      console.log(
+        `[SCOUT_NOWPAYMENTS_IPN] intake email ${emailResult.ok ? "sent" : "failed"} to ${subscriber.email}: ${emailResult.error || emailResult.messageId}`
+      );
+    } catch (err) {
+      console.error(`[SCOUT_NOWPAYMENTS_IPN] intake email error for ${subscriber.email}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
 }
 
 function extractPlanId(orderId: string): string {
