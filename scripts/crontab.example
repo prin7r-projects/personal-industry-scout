@@ -1,0 +1,20 @@
+# Personal Industry Scout — host cron schedule
+# Install on the deploy host with: crontab /opt/prin7r-deploys/personal-industry-scout/scripts/crontab.example
+#
+# All workers run as one-shot containers and exit after completion.
+# The docker compose project directory must match the actual deploy path.
+
+PIS_DIR=/opt/prin7r-deploys/personal-industry-scout
+
+# sync_notion — daily at 03:00 UTC, pulls briefs from Notion into Postgres
+0 3 * * * cd $PIS_DIR && docker compose --profile workers run --rm worker-sync-notion
+
+# deliver — Monday at 06:00 UTC, generates and emails watermarked briefs
+0 6 * * 1 cd $PIS_DIR && docker compose --profile workers run --rm worker-deliver
+
+# tender_intake — every 6 hours, fetches open tenders from configured sources
+0 0,6,12,18 * * * cd $PIS_DIR && docker compose --profile workers run --rm worker-tender-intake
+
+# scout_signals — daily at 02:00 UTC, runs once per active scout
+# Replace <scout-id> with each active scout's UUID or loop over a list.
+0 2 * * * cd $PIS_DIR && docker compose --profile workers run --rm -e SCOUT_ID=<scout-id> worker-scout-signals

@@ -5,6 +5,8 @@
  *   SCOUT_ID=<uuid> npx tsx src/main.ts
  *   npx tsx src/main.ts <scout_id>
  *
+ * Cron: 0 2 * * *  (daily at 02:00 UTC — run once per active scout)
+ *
  * Env:
  *   BRAVE_API_KEY — Brave Search API subscription token (optional; stubbed if absent)
  */

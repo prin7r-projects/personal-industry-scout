@@ -78,6 +78,24 @@ Traefik on the host (in host-network mode) discovers the container via
 its bridge IP and the `traefik.http.routers.personal-industry-scout.*`
 labels on the service.
 
+### Worker scheduling
+
+Workers are one-shot containers triggered by the host cron daemon:
+
+```bash
+# Install the cron schedule on the deploy host
+crontab /opt/prin7r-deploys/personal-industry-scout/scripts/crontab.example
+```
+
+The schedule (see `scripts/crontab.example`):
+- **sync_notion** — daily 03:00 UTC — pulls briefs from Notion
+- **deliver** — Monday 06:00 UTC — generates + emails watermarked briefs
+- **tender_intake** — every 6 hours — fetches open tenders
+- **scout_signals** — daily 02:00 UTC — fetches industry signals per scout
+
+Each worker needs its env vars set in the deploy host's `.env` file
+(NOTION_TOKEN, BRAVE_API_KEY, TENDER_SOURCE_URL, etc.).
+
 ## Quality screenshots
 
 - Desktop · `docs/screenshots/landing-desktop.png` · 1440×900 · production URL

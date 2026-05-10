@@ -102,5 +102,20 @@ services:
     profiles:
       - workers
 
+  worker-scout-signals:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker-scout-signals
+    image: personal-industry-scout-worker-scout-signals:latest
+    container_name: personal-industry-scout-worker-scout-signals
+    restart: "no"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - workers
+
 volumes:
   pgdata:

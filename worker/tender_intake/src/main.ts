@@ -3,7 +3,7 @@
  * source and persists rows to the Signal table.
  *
  * Usage: TENDER_SOURCE_URL=https://... [TENDER_INDUSTRY=general] npx tsx src/main.ts
- * Cron:  scheduled externally via docker compose --profile workers run --rm worker-tender-intake
+ * Cron: 0 0,6,12,18 * * * (every 6 hours)
  */
 import type { Prisma } from "@pis/db";
 import { PrismaClient } from "@pis/db";
