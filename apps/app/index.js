@@ -51,6 +51,23 @@ app.get("/app/templates/:id", async (req, res, next) => {
   }
 });
 
+// ── Benchmark catalog ───────────────────────────────────────────
+
+app.get("/app/benchmarks", async (_req, res, next) => {
+  try {
+    const benchmarks = await prisma.benchmark.findMany({
+      orderBy: [{ category: "asc" }, { name: "asc" }],
+      include: {
+        scores: { orderBy: { industry: "asc" } },
+      },
+    });
+
+    res.send(pageShell("Benchmarks · Prin7r", renderBenchmarkCatalog(benchmarks)));
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ── Schedule page ───────────────────────────────────────────────
 
 app.get("/app/schedule", async (_req, res, next) => {
@@ -259,6 +276,7 @@ footer .inner{max-width:740px;margin:0 auto;padding:0 24px}
 <a href="/app/templates" class="logo">Prin<span>7</span>r</a>
 <div style="display:flex;align-items:center;gap:20px">
 <a href="/app/schedule" style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8A867E;text-decoration:none">Schedule</a>
+<a href="/app/benchmarks" style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8A867E;text-decoration:none">Benchmarks</a>
 <a href="/app/templates" style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8A867E;text-decoration:none">Templates</a>
 </div>
 </div></nav>
@@ -552,8 +570,65 @@ function renderSchedule(tickets) {
 </script>`;
 }
 
+function renderBenchmarkCatalog(benchmarks) {
+  const rows = benchmarks.length === 0
+    ? `<tr><td colspan="6" class="empty-cell">No benchmarks seeded.</td></tr>`
+    : benchmarks.map((benchmark) => {
+        const scoresByIndustry = Object.fromEntries(
+          benchmark.scores.map((score) => [score.industry, score])
+        );
+
+        return `
+        <tr>
+          <td>
+            <div class="body-text">${escapeHtml(benchmark.name)}</div>
+            <div class="body-meta">${escapeHtml(benchmark.description)}</div>
+          </td>
+          <td><span class="badge">${escapeHtml(benchmark.category)}</span></td>
+          ${["cost-efficient", "frontier", "open-weight"].map((industry) => `
+          <td class="cell-scheduled">${renderScore(scoresByIndustry[industry])}</td>
+          `).join("")}
+          <td class="cell-id">${benchmark.scores.length}</td>
+        </tr>`;
+      }).join("");
+
+  return `
+<div class="mx" style="padding-top:24px">
+  <div style="display:flex;align-items:end;justify-content:space-between;margin-bottom:24px;gap:16px">
+    <div>
+      <h1 style="font-family:'Source Serif 4',serif;font-size:28px;font-weight:600">Benchmark Catalog</h1>
+      <p style="color:#5C5A55;font-size:14px;margin-top:4px">${benchmarks.length} seeded benchmarks with sample score matrix</p>
+    </div>
+  </div>
+
+  <div class="schedule-table-wrap">
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th>Benchmark</th>
+          <th style="width:120px">Category</th>
+          <th style="width:120px">Cost Efficient</th>
+          <th style="width:120px">Frontier</th>
+          <th style="width:120px">Open Weight</th>
+          <th style="width:80px">Scores</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  </div>
+</div>`;
+}
+
+function renderScore(score) {
+  if (!score) return "—";
+  const value = score.unit === "ratio" ? score.value.toFixed(1) : score.value.toFixed(1) + "%";
+  return `${value} <span style="color:#8A867E">${escapeHtml(score.unit)}</span>`;
+}
+
 function escapeHtml(str) {
-  return str
+  return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")

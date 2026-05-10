@@ -71,19 +71,23 @@ export default function IntakePage() {
     telegramPairCode: "",
   });
 
-  // Validate token on mount
+  // Verify token server-side on mount
   useEffect(() => {
     if (!token) {
       setValidToken(false);
       return;
     }
-    // Basic check: token should have 3 parts separated by dots
-    const parts = token.split(".");
-    if (parts.length === 3) {
-      setValidToken(true);
-    } else {
-      setValidToken(false);
-    }
+    let cancelled = false;
+    fetch(`/api/intake/${token}`)
+      .then((res) => {
+        if (!cancelled) setValidToken(res.ok);
+      })
+      .catch(() => {
+        if (!cancelled) setValidToken(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const toggleIndustry = useCallback((industry: string) => {

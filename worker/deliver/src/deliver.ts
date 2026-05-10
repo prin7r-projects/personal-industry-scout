@@ -117,14 +117,20 @@ export async function runDelivery(): Promise<DeliveryResult[]> {
     console.log(`[deliver] Running for ISO week ${currentWeek}`);
 
     // Find all active subscriptions
-    const subscriptions = await prisma.subscription.findMany({
-      where: { status: "active" },
-      include: {
-        subscriber: {
-          include: { watchlist: true },
+    let subscriptions: Awaited<ReturnType<typeof prisma.subscription.findMany>>;
+    try {
+      subscriptions = await prisma.subscription.findMany({
+        where: { status: "active" },
+        include: {
+          subscriber: {
+            include: { watchlist: true },
+          },
         },
-      },
-    });
+      });
+    } catch (err) {
+      console.log(`[deliver] Database not available (${err instanceof Error ? err.message : String(err)}). Returning empty results.`);
+      return results;
+    }
 
     console.log(`[deliver] Found ${subscriptions.length} active subscriptions`);
 

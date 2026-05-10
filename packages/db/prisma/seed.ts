@@ -113,10 +113,10 @@ The EU's Data Act came into force on May 2, requiring vertical SaaS vendors serv
 
   for (const cite of citations) {
     await prisma.citation.upsert({
-      where: { id: cite.citeId },
+      where: { id: citationIds[cite.citeId] },
       update: {},
       create: {
-        id: cite.citeId,
+        id: citationIds[cite.citeId],
         ...cite,
         verifiedAt: new Date("2026-05-04T09:30:00Z"),
       },
@@ -160,8 +160,139 @@ The EU's Data Act came into force on May 2, requiring vertical SaaS vendors serv
   });
   console.log(`  Asset: ${asset.name} (${asset.type})`);
 
+  const benchmarks = [
+    {
+      id: "00000000-0000-0000-0000-000000000401",
+      name: "MMLU",
+      category: "accuracy",
+      description: "Broad multitask language understanding across academic and professional domains.",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000402",
+      name: "GPQA Diamond",
+      category: "reasoning",
+      description: "Graduate-level science questions designed to test difficult expert reasoning.",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000403",
+      name: "HumanEval",
+      category: "quality",
+      description: "Python coding task completion benchmark for functional correctness.",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000404",
+      name: "SWE-bench Verified",
+      category: "quality",
+      description: "Repository-level software engineering fixes validated against real issue patches.",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000405",
+      name: "GSM8K",
+      category: "reasoning",
+      description: "Grade-school math word problems that measure stepwise arithmetic reasoning.",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000406",
+      name: "MATH",
+      category: "reasoning",
+      description: "Competition-style math problems spanning algebra, geometry, counting, and calculus.",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000407",
+      name: "BBH",
+      category: "reasoning",
+      description: "Big-Bench Hard tasks focused on multi-step reasoning and instruction following.",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000408",
+      name: "DROP",
+      category: "accuracy",
+      description: "Discrete reasoning over paragraphs with arithmetic and span extraction.",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000409",
+      name: "HellaSwag",
+      category: "accuracy",
+      description: "Commonsense natural language inference for completing everyday scenarios.",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000410",
+      name: "TruthfulQA",
+      category: "safety",
+      description: "Truthfulness benchmark targeting common misconceptions and imitative falsehoods.",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000411",
+      name: "RealToxicityPrompts",
+      category: "safety",
+      description: "Safety benchmark measuring toxic continuation risk from challenging prompts.",
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000412",
+      name: "MT-Bench",
+      category: "quality",
+      description: "Multi-turn chat quality benchmark for helpfulness and instruction adherence.",
+    },
+  ];
+
+  const scoreMatrix: Record<string, Record<string, number>> = {
+    "MMLU": { "frontier": 88.7, "open-weight": 82.4, "cost-efficient": 76.1 },
+    "GPQA Diamond": { "frontier": 61.2, "open-weight": 48.5, "cost-efficient": 39.8 },
+    "HumanEval": { "frontier": 92.1, "open-weight": 86.4, "cost-efficient": 79.3 },
+    "SWE-bench Verified": { "frontier": 48.6, "open-weight": 33.2, "cost-efficient": 21.7 },
+    "GSM8K": { "frontier": 96.8, "open-weight": 91.5, "cost-efficient": 84.9 },
+    "MATH": { "frontier": 73.4, "open-weight": 59.2, "cost-efficient": 46.6 },
+    "BBH": { "frontier": 87.3, "open-weight": 78.1, "cost-efficient": 69.4 },
+    "DROP": { "frontier": 86.2, "open-weight": 80.8, "cost-efficient": 73.5 },
+    "HellaSwag": { "frontier": 95.6, "open-weight": 92.7, "cost-efficient": 88.4 },
+    "TruthfulQA": { "frontier": 76.5, "open-weight": 69.1, "cost-efficient": 61.8 },
+    "RealToxicityPrompts": { "frontier": 3.8, "open-weight": 6.9, "cost-efficient": 9.7 },
+    "MT-Bench": { "frontier": 9.4, "open-weight": 8.1, "cost-efficient": 7.2 },
+  };
+
+  for (const benchmarkSeed of benchmarks) {
+    const benchmark = await prisma.benchmark.upsert({
+      where: { name: benchmarkSeed.name },
+      update: {
+        description: benchmarkSeed.description,
+        category: benchmarkSeed.category,
+      },
+      create: benchmarkSeed,
+    });
+
+    for (const [industry, value] of Object.entries(scoreMatrix[benchmark.name])) {
+      await prisma.score.upsert({
+        where: {
+          benchmarkId_industry: {
+            benchmarkId: benchmark.id,
+            industry,
+          },
+        },
+        update: {
+          value,
+          unit: benchmark.name === "MT-Bench" ? "ratio" : "percent",
+        },
+        create: {
+          benchmarkId: benchmark.id,
+          industry,
+          value,
+          unit: benchmark.name === "MT-Bench" ? "ratio" : "percent",
+        },
+      });
+    }
+  }
+  console.log(`  Benchmarks: ${benchmarks.length}`);
+  console.log(`  Scores: ${benchmarks.length * 3}`);
+
   console.log("✅ Seed complete.");
 }
+
+const citationIds: Record<string, string> = {
+  "C-2026W19-0001": "00000000-0000-0000-0000-000000000101",
+  "C-2026W19-0002": "00000000-0000-0000-0000-000000000102",
+  "C-2026W19-0003": "00000000-0000-0000-0000-000000000103",
+  "C-2026W19-0004": "00000000-0000-0000-0000-000000000104",
+};
 
 main()
   .catch((e) => {

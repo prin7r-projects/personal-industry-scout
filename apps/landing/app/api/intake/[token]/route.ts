@@ -3,6 +3,27 @@ import { prisma } from "@/lib/prisma";
 import { verifyIntakeToken } from "@/lib/intake-token";
 
 /**
+ * GET /api/intake/[token]
+ *
+ * Verifies the intake token is valid without consuming it. Returns 200 with
+ * subscriberId if valid, 401 if expired/invalid.
+ */
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ token: string }> }
+) {
+  const { token } = await params;
+  const payload = verifyIntakeToken(token);
+  if (!payload) {
+    return NextResponse.json(
+      { error: "Invalid or expired intake token." },
+      { status: 401 }
+    );
+  }
+  return NextResponse.json({ subscriberId: payload.subscriberId });
+}
+
+/**
  * POST /api/intake/[token]
  *
  * Accepts a one-time intake token (valid 7 days) and persists the subscriber's

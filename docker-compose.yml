@@ -39,8 +39,8 @@ services:
     build:
       context: .
       dockerfile: apps/app/Dockerfile.app
-    image: personal-industry-scout-app:latest
-    container_name: personal-industry-scout-app
+    image: stampedagents-app:latest
+    container_name: stampedagents-app
     restart: unless-stopped
     expose:
       - "3001"
@@ -51,10 +51,10 @@ services:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.personal-industry-scout-console.rule=Host(`annotedly.prin7r-app.com`) || Host(`personalindustryscout.prin7r-app.com`) || Host(`agent-that-sells-agents.prin7r.com`)"
-      - "traefik.http.routers.personal-industry-scout-console.entrypoints=websecure"
-      - "traefik.http.routers.personal-industry-scout-console.tls.certresolver=letsencrypt"
-      - "traefik.http.services.personal-industry-scout-console.loadbalancer.server.port=3001"
+      - "traefik.http.routers.stampedagents-app.rule=Host(`annotedly.prin7r-app.com`) || Host(`personalindustryscout.prin7r-app.com`) || Host(`agent-that-sells-agents.prin7r.com`) || Host(`stampedagents.prin7r-app.com`)"
+      - "traefik.http.routers.stampedagents-app.entrypoints=websecure"
+      - "traefik.http.routers.stampedagents-app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.stampedagents-app.loadbalancer.server.port=3001"
 
   # Workers — not scheduled inside the container; triggered via cron on host or orchestrator.
   worker-sync-notion:
