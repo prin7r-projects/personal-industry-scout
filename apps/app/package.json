@@ -3,13 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node index.js"
+    "start": "tsx index.js"
   },
   "dependencies": {
     "@pis/db": "workspace:*",
     "@prisma/client": "^6.1.0",
     "express": "4.21.2",
     "marked": "^18.0.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
   },
   "packageManager": "pnpm@9.15.4"
 }

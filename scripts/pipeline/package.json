@@ -4,7 +4,6 @@
   "type": "module",
   "scripts": {
     "synth": "tsx synth.ts",
-    "smoke": "tsx smoke.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
