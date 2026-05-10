@@ -124,6 +124,42 @@ The EU's Data Act came into force on May 2, requiring vertical SaaS vendors serv
   }
   console.log(`  Citations: ${citations.length}`);
 
+  // Create a test user with workspace and asset
+  const user = await prisma.user.upsert({
+    where: { email: "dev@prin7r.com" },
+    update: {},
+    create: {
+      email: "dev@prin7r.com",
+      name: "Dev User",
+    },
+  });
+  console.log(`  User: ${user.email}`);
+
+  const workspace = await prisma.workspace.upsert({
+    where: { id: "00000000-0000-0000-0000-000000000200" },
+    update: {},
+    create: {
+      id: "00000000-0000-0000-0000-000000000200",
+      name: "Default Workspace",
+      ownerId: user.id,
+    },
+  });
+  console.log(`  Workspace: ${workspace.name}`);
+
+  const asset = await prisma.asset.upsert({
+    where: { id: "00000000-0000-0000-0000-000000000300" },
+    update: {},
+    create: {
+      id: "00000000-0000-0000-0000-000000000300",
+      workspaceId: workspace.id,
+      userId: user.id,
+      name: "sample-brief.pdf",
+      type: "document",
+      url: "https://storage.example.com/sample-brief.pdf",
+    },
+  });
+  console.log(`  Asset: ${asset.name} (${asset.type})`);
+
   console.log("✅ Seed complete.");
 }
 

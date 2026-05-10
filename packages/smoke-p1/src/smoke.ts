@@ -126,6 +126,17 @@ async function main() {
     record("Seed data", false, "Database not available; run pnpm db:seed after docker compose up");
   }
 
+  // ── 2b. New models (User/Workspace/Asset) ──
+  try {
+    const userCount = await prisma.user.count();
+    const workspaceCount = await prisma.workspace.count();
+    const assetCount = await prisma.asset.count();
+    record("User/Workspace/Asset models", userCount > 0 && workspaceCount > 0 && assetCount > 0,
+      `${userCount} users, ${workspaceCount} workspaces, ${assetCount} assets`);
+  } catch {
+    record("User/Workspace/Asset models", false, "New models not accessible; run pnpm db:seed after migrate");
+  }
+
   // ── 3. Watermark PDF generation ──
   try {
     const pdf = await generateWatermarkedPdf({
