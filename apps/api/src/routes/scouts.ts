@@ -7,8 +7,9 @@ export const scoutsRouter: Router = Router();
 scoutsRouter.use(authMiddleware);
 
 scoutsRouter.get("/", async (req: AuthRequest, res: Response) => {
+  const userId = req.userId!;
   const scouts = await prisma.scout.findMany({
-    where: { userId: req.userId },
+    where: { userId },
     orderBy: { createdAt: "desc" },
   });
   res.json(scouts);
@@ -16,8 +17,9 @@ scoutsRouter.get("/", async (req: AuthRequest, res: Response) => {
 
 scoutsRouter.get("/:id", async (req: AuthRequest, res: Response) => {
   const id = String(req.params.id);
+  const userId = req.userId!;
   const scout = await prisma.scout.findFirst({
-    where: { id, userId: req.userId },
+    where: { id, userId },
   });
   if (!scout) {
     res.status(404).json({ error: "Scout not found" });
@@ -48,8 +50,9 @@ scoutsRouter.post("/", async (req: AuthRequest, res: Response) => {
 
 scoutsRouter.put("/:id", async (req: AuthRequest, res: Response) => {
   const id = String(req.params.id);
+  const userId = req.userId!;
   const existing = await prisma.scout.findFirst({
-    where: { id, userId: req.userId },
+    where: { id, userId },
   });
   if (!existing) {
     res.status(404).json({ error: "Scout not found" });
@@ -77,8 +80,9 @@ scoutsRouter.put("/:id", async (req: AuthRequest, res: Response) => {
 
 scoutsRouter.delete("/:id", async (req: AuthRequest, res: Response) => {
   const id = String(req.params.id);
+  const userId = req.userId!;
   const existing = await prisma.scout.findFirst({
-    where: { id, userId: req.userId },
+    where: { id, userId },
   });
   if (!existing) {
     res.status(404).json({ error: "Scout not found" });

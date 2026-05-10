@@ -21,8 +21,8 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api/scouts", scoutsRouter);
 app.use("/api/webhooks", webhooksRouter);
 
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
+app.get("/health", (_req, res) => {
+  res.json({ ok: true });
 });
 
 app.listen(port, () => {

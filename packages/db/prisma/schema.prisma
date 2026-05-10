@@ -8,24 +8,26 @@ datasource db {
 }
 
 model User {
-  id            String           @id @default(cuid())
-  email         String           @unique
-  passwordHash  String?
-  name          String?
-  emailVerified Boolean          @default(false)
-  image         String?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  verifications Verification[]
-  watches       Watch[]
-  matches       Match[]
-  bots          Bot[]
-  scouts        Scout[]
-  briefs        Brief[]
-  webhookConfigs WebhookConfig[]
-  campaigns     Campaign[]
+  id              String           @id @default(cuid())
+  email           String           @unique
+  passwordHash    String?
+  name            String?
+  emailVerified   Boolean          @default(false)
+  image           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  accounts        Account[]
+  sessions        Session[]
+  verifications   Verification[]
+  watches         Watch[]
+  matches         Match[]
+  bots            Bot[]
+  scouts          Scout[]
+  briefs          Brief[]
+  webhookConfigs  WebhookConfig[]
+  campaigns       Campaign[]
+  ownedWorkspaces Workspace[]
+  assets          Asset[]
 }
 
 model Account {
@@ -175,6 +177,33 @@ model Campaign {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  assets    Asset[]
+
+  @@index([ownerId])
+}
+
+model Asset {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  name        String
+  type        String
+  url         String
+  createdAt   DateTime @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([userId])
 }
 
 model WebhookConfig {
