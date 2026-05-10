@@ -8,16 +8,16 @@
     ".": "./src/sync.ts"
   },
   "scripts": {
-    "sync": "tsx src/sync.ts",
+    "sync": "tsx src/main.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@notionhq/client": "^2.2.15",
-    "@pis/db": "workspace:*"
+    "@pis/db": "workspace:*",
+    "tsx": "^4.19.0"
   },
   "devDependencies": {
-    "tsx": "^4.19.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"
   }
