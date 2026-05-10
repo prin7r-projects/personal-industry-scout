@@ -10,10 +10,7 @@ out/
 .vscode/
 docs/screenshots/.tmp/
 .paperclip-commandcode-smoke
-market-research-on-demand/
 .turbo/
 dist/
 *.db
 *.db-journal
-brassmark/
-paperclip/
