@@ -181,20 +181,41 @@ model Score {
   @@map("scores")
 }
 
-model Item {
+model Source {
+  id           String    @id @default(uuid()) @db.Uuid
+  workspaceId  String    @map("workspace_id") @db.Uuid
+  name         String
+  type         String    // rss | sitemap | json | api
+  url          String
+  config       Json      @default("{}")
+  enabled      Boolean   @default(true)
+  lastIngestedAt DateTime? @map("last_ingested_at") @db.Timestamptz()
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+
+  workspace    Workspace  @relation(fields: [workspaceId], references: [id])
+  items        DossierItem[]
+
+  @@index([workspaceId])
+  @@index([type])
+  @@map("sources")
+}
+
+model DossierItem {
   id        String   @id @default(uuid()) @db.Uuid
-  sourceId  String   @map("source_id")
+  sourceId  String   @map("source_id") @db.Uuid
   url       String
   title     String
-  content   String
-  source    String
+  content   String?
   fetchedAt DateTime @default(now()) @map("fetched_at") @db.Timestamptz()
   metadata  Json     @default("{}")
+
+  source    Source   @relation(fields: [sourceId], references: [id])
 
   @@unique([sourceId, url])
   @@index([sourceId])
   @@index([fetchedAt])
-  @@map("items")
+  @@map("dossier_items")
 }
 
 model User {
@@ -235,6 +256,7 @@ model Workspace {
 
   owner  User    @relation(fields: [ownerId], references: [id])
   assets Asset[]
+  sources Source[]
 
   @@map("workspaces")
 }

@@ -6,7 +6,11 @@
     "db:migrate": "pnpm --filter @pis/db run migrate",
     "db:seed": "pnpm --filter @pis/db run seed",
     "db:studio": "pnpm --filter @pis/db run studio",
+    "provision:number": "tsx scripts/provision-number.ts",
     "smoke:p1": "pnpm --filter @pis/smoke-p1 run smoke"
   },
-  "packageManager": "pnpm@9.15.4"
+  "packageManager": "pnpm@9.15.4",
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
 }
