@@ -10,13 +10,14 @@
  *   401 signature invalid
  *   200 + { ok, paid, order_id, status } on a verified payload
  *
- * Order persistence is intentionally a console.log audit trail in Wave 2.
- * apps/app/ will replace it with a DB write when subscriptions ship.
+ * On confirmed payments, creates Subscriber + Subscription + Order records.
+ * Idempotent — duplicate invoice_ids are silently acknowledged.
  */
 
 import { NextResponse } from "next/server";
 import { optionalEnv } from "@/lib/env";
-import { verifyNowpaymentsIpn } from "@/lib/nowpayments";
+import { verifyNowpaymentsIpn, isPlanId, PLANS } from "@/lib/nowpayments";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,11 +56,20 @@ export async function POST(request: Request) {
   const paid = ["finished", "confirmed"].includes(status.toLowerCase());
   const orderId =
     stringValue(payload.order_id) ?? stringValue(payload.payment_id) ?? "nowpayments_unknown";
+  const invoiceId = stringValue(payload.invoice_id) ?? orderId;
 
-  // Stub — when apps/app ships, this becomes a DB write.
-  console.log(
-    `[SCOUT_NOWPAYMENTS_IPN] verified=true order_id=${orderId} status=${status} paid=${paid}`
-  );
+  if (paid) {
+    try {
+      await persistOrder(payload, orderId, invoiceId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "unknown_error";
+      console.error(`[SCOUT_NOWPAYMENTS_IPN] persist failed order_id=${orderId}: ${message}`);
+      return NextResponse.json(
+        { error: "persist_failed", message },
+        { status: 500 }
+      );
+    }
+  }
 
   return NextResponse.json({
     ok: true,
@@ -68,6 +78,54 @@ export async function POST(request: Request) {
     order_id: orderId,
     status
   });
+}
+
+async function persistOrder(
+  payload: Record<string, unknown>,
+  orderId: string,
+  invoiceId: string
+) {
+  const existing = await prisma.order.findUnique({ where: { invoiceId } });
+  if (existing) {
+    console.log(`[SCOUT_NOWPAYMENTS_IPN] duplicate invoice_id=${invoiceId}, skipping`);
+    return;
+  }
+
+  const planId = extractPlanId(orderId);
+  const plan = isPlanId(planId) ? PLANS[planId] : PLANS.operator;
+  const amountCents = Math.round(parseFloat(stringValue(payload.price_amount) ?? "0") * 100);
+
+  const subscriber = await prisma.subscriber.create({
+    data: {
+      email: `pending-${invoiceId}@pis.pending`,
+      name: `Pending — ${plan.name}`,
+    },
+  });
+
+  const subscription = await prisma.subscription.create({
+    data: {
+      subscriberId: subscriber.id,
+      tier: plan.id,
+      status: "active",
+    },
+  });
+
+  await prisma.order.create({
+    data: {
+      subscriptionId: subscription.id,
+      invoiceId,
+      amountCents,
+    },
+  });
+
+  console.log(
+    `[SCOUT_NOWPAYMENTS_IPN] created subscriber=${subscriber.id} subscription=${subscription.id} plan=${plan.id} amountCents=${amountCents}`
+  );
+}
+
+function extractPlanId(orderId: string): string {
+  const match = orderId.match(/^scout_(operator|partner|concierge)_/);
+  return match ? match[1] : "operator";
 }
 
 function stringValue(value: unknown): string | undefined {
