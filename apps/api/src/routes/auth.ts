@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@brassmark/db";
 import { signToken } from "../lib/auth.js";
 
-export const authRouter = Router();
+export const authRouter: Router = Router();
 
 const registerSchema = z.object({
   email: z.string().email(),

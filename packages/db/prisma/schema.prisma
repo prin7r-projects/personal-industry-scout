@@ -147,6 +147,7 @@ model Scout {
   industry  String
   region    String
   signals   String   @default("[]")
+  twilioSid String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -199,10 +200,12 @@ model WebhookDelivery {
   maxAttempts    Int           @default(5)
   nextRetryAt    DateTime?
   payload        String        @default("{}")
+  attemptLog     String        @default("[]")
   responseStatus Int?
   responseBody   String?
   error          String?
   durationMs     Int?
+  lastAttemptAt  DateTime?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   webhookConfig  WebhookConfig @relation(fields: [webhookConfigId], references: [id], onDelete: Cascade)

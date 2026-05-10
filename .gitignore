@@ -3,7 +3,8 @@ dist/
 .env
 *.tsbuildinfo
 .turbo/
-prisma/*.db
-prisma/*.db-journal
+.next/
+*.db
+*.db-journal
 brassmark/
 paperclip/

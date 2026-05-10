@@ -3,7 +3,7 @@ import { prisma } from "@brassmark/db";
 import { z } from "zod";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 
-export const botsRouter = Router();
+export const botsRouter: Router = Router();
 
 botsRouter.use(authMiddleware);
 
@@ -47,8 +47,9 @@ botsRouter.get("/", async (req: AuthRequest, res: Response) => {
 });
 
 botsRouter.get("/:id", async (req: AuthRequest, res: Response) => {
+  const id = String(req.params.id);
   const bot = await prisma.bot.findFirst({
-    where: { id: req.params.id, userId: req.userId },
+    where: { id, userId: req.userId },
   });
 
   if (!bot) {
@@ -57,4 +58,44 @@ botsRouter.get("/:id", async (req: AuthRequest, res: Response) => {
   }
 
   res.json(bot);
+});
+
+const updateBotSchema = createBotSchema.partial();
+
+botsRouter.put("/:id", async (req: AuthRequest, res: Response) => {
+  const id = String(req.params.id);
+  const existing = await prisma.bot.findFirst({
+    where: { id, userId: req.userId },
+  });
+  if (!existing) {
+    res.status(404).json({ error: "Bot not found" });
+    return;
+  }
+
+  const parsed = updateBotSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.errors });
+    return;
+  }
+
+  const bot = await prisma.bot.update({
+    where: { id },
+    data: parsed.data,
+  });
+
+  res.json(bot);
+});
+
+botsRouter.delete("/:id", async (req: AuthRequest, res: Response) => {
+  const id = String(req.params.id);
+  const existing = await prisma.bot.findFirst({
+    where: { id, userId: req.userId },
+  });
+  if (!existing) {
+    res.status(404).json({ error: "Bot not found" });
+    return;
+  }
+
+  await prisma.bot.delete({ where: { id } });
+  res.status(204).send();
 });

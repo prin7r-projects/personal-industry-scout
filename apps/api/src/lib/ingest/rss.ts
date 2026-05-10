@@ -1,4 +1,4 @@
-import { XMLParser } from "fast-xml-parser";
+import { XMLParser, XMLValidator } from "fast-xml-parser";
 import type { ParsedSource } from "./types.js";
 
 function forceArray<T>(value: T | T[] | undefined): T[] {
@@ -6,59 +6,59 @@ function forceArray<T>(value: T | T[] | undefined): T[] {
   return Array.isArray(value) ? value : [value];
 }
 
+function readText(value: unknown): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "object" && "_" in value) return readText((value as Record<string, unknown>)._);
+  if (typeof value === "object" && "#text" in value) return readText((value as Record<string, unknown>)["#text"]);
+  return undefined;
+}
+
 function parseRssItem(item: Record<string, unknown>): ParsedSource {
   return {
-    url: String(item.link ?? ""),
-    title: item.title != null ? String(item.title) : undefined,
-    description: item.description != null ? String(item.description) : undefined,
-    content: item["content:encoded"] != null ? String(item["content:encoded"]) : undefined,
-    author: item.author != null ? String(item.author) : undefined,
-    publishedAt: item.pubDate != null ? String(item.pubDate) : undefined,
+    url: readText(item.link) ?? "",
+    title: readText(item.title),
+    description: readText(item.description),
+    content: readText(item["content:encoded"]),
+    author: readText(item.author ?? item["dc:creator"]),
+    publishedAt: readText(item.pubDate ?? item.published),
     categories: item.category != null
-      ? forceArray(item.category).map((c) => (typeof c === "string" ? c : String((c as Record<string, unknown>)._ ?? c)))
+      ? forceArray(item.category).flatMap((category) => {
+          const text = readText(category);
+          return text ? [text] : [];
+        })
       : undefined,
-    guid: item.guid != null
-      ? typeof item.guid === "string"
-        ? item.guid
-        : String((item.guid as Record<string, unknown>)._ ?? item.guid)
-      : undefined,
+    guid: readText(item.guid),
     sourceType: "rss",
     sourceUrl: "",
   };
 }
 
 function parseAtomEntry(entry: Record<string, unknown>): ParsedSource {
-  const link = forceArray(entry.link).find(
-    (l) => (l as Record<string, unknown>)["@_rel"] !== "self"
-  ) as Record<string, unknown> | undefined;
+  const link = forceArray(entry.link).find((candidate) => {
+    if (typeof candidate === "string") return true;
+    return (candidate as Record<string, unknown>)["@_rel"] !== "self";
+  });
   const authorObj = entry.author as Record<string, unknown> | undefined;
 
   return {
-    url: link != null ? String(link["@_href"] ?? "") : "",
-    title: entry.title != null
-      ? typeof entry.title === "string"
-        ? entry.title
-        : String((entry.title as Record<string, unknown>)._ ?? entry.title)
-      : undefined,
-    description: entry.summary != null
-      ? typeof entry.summary === "string"
-        ? entry.summary
-        : String((entry.summary as Record<string, unknown>)._ ?? entry.summary)
-      : undefined,
-    content: entry.content != null
-      ? typeof entry.content === "string"
-        ? entry.content
-        : String((entry.content as Record<string, unknown>)._ ?? entry.content)
-      : undefined,
-    author: authorObj?.name != null ? String(authorObj.name) : undefined,
-    publishedAt: entry.published != null ? String(entry.published) : undefined,
-    modifiedAt: entry.updated != null ? String(entry.updated) : undefined,
+    url: typeof link === "string" ? link : readText((link as Record<string, unknown> | undefined)?.["@_href"]) ?? "",
+    title: readText(entry.title),
+    description: readText(entry.summary),
+    content: readText(entry.content),
+    author: readText(authorObj?.name),
+    publishedAt: readText(entry.published),
+    modifiedAt: readText(entry.updated),
     categories: entry.category != null
-      ? forceArray(entry.category).map((c) =>
-          typeof c === "string" ? c : String((c as Record<string, unknown>)["@_term"] ?? c)
-        )
+      ? forceArray(entry.category).flatMap((category) => {
+          const text = typeof category === "string"
+            ? category
+            : readText((category as Record<string, unknown>)["@_term"]);
+          return text ? [text] : [];
+        })
       : undefined,
-    guid: entry.id != null ? String(entry.id) : undefined,
+    guid: readText(entry.id),
     sourceType: "rss",
     sourceUrl: "",
   };
@@ -71,6 +71,13 @@ export async function fetchRssFeed(feedUrl: string): Promise<ParsedSource[]> {
   }
 
   const xml = await response.text();
+  if (xml.trim() === "") return [];
+
+  const validation = XMLValidator.validate(xml);
+  if (validation !== true) {
+    throw new Error(`Invalid RSS XML: ${validation.err.msg}`);
+  }
+
   const parser = new XMLParser({ ignoreAttributes: false });
   const doc = parser.parse(xml);
 

@@ -1,8 +1,9 @@
 import { Router, Response } from "express";
 import { prisma } from "@brassmark/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
+import { triggerWebhooks } from "../lib/webhooks.js";
 
-export const webhooksRouter = Router();
+export const webhooksRouter: Router = Router();
 
 webhooksRouter.use(authMiddleware);
 
@@ -77,9 +78,33 @@ webhooksRouter.get("/", async (req: AuthRequest, res: Response) => {
   res.json(configs);
 });
 
+webhooksRouter.post("/events", async (req: AuthRequest, res: Response) => {
+  const userId = req.userId!;
+  const { eventType, payload } = req.body;
+
+  if (!eventType || typeof eventType !== "string") {
+    res.status(400).json({ error: "eventType is required" });
+    return;
+  }
+
+  if (!VALID_EVENTS.includes(eventType)) {
+    res.status(400).json({ error: `invalid eventType: ${eventType}` });
+    return;
+  }
+
+  if (payload === undefined || payload === null || typeof payload !== "object") {
+    res.status(400).json({ error: "payload object is required" });
+    return;
+  }
+
+  await triggerWebhooks(userId, eventType, payload);
+
+  res.status(202).json({ status: "accepted" });
+});
+
 webhooksRouter.get("/:id", async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   const config = await prisma.webhookConfig.findUnique({ where: { id } });
 
@@ -98,7 +123,7 @@ webhooksRouter.get("/:id", async (req: AuthRequest, res: Response) => {
 
 webhooksRouter.put("/:id", async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   const existing = await prisma.webhookConfig.findUnique({ where: { id } });
 
@@ -181,7 +206,7 @@ webhooksRouter.put("/:id", async (req: AuthRequest, res: Response) => {
 
 webhooksRouter.delete("/:id", async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   const existing = await prisma.webhookConfig.findUnique({ where: { id } });
 
@@ -202,7 +227,7 @@ webhooksRouter.delete("/:id", async (req: AuthRequest, res: Response) => {
 
 webhooksRouter.get("/:id/deliveries", async (req: AuthRequest, res: Response) => {
   const userId = req.userId!;
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   const config = await prisma.webhookConfig.findUnique({ where: { id } });
 

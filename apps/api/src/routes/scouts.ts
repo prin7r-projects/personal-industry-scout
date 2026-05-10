@@ -2,7 +2,7 @@ import { Router, Response } from "express";
 import { prisma } from "@brassmark/db";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
 
-export const scoutsRouter = Router();
+export const scoutsRouter: Router = Router();
 
 scoutsRouter.use(authMiddleware);
 
@@ -15,8 +15,9 @@ scoutsRouter.get("/", async (req: AuthRequest, res: Response) => {
 });
 
 scoutsRouter.get("/:id", async (req: AuthRequest, res: Response) => {
+  const id = String(req.params.id);
   const scout = await prisma.scout.findFirst({
-    where: { id: req.params.id, userId: req.userId },
+    where: { id, userId: req.userId },
   });
   if (!scout) {
     res.status(404).json({ error: "Scout not found" });
@@ -46,8 +47,9 @@ scoutsRouter.post("/", async (req: AuthRequest, res: Response) => {
 });
 
 scoutsRouter.put("/:id", async (req: AuthRequest, res: Response) => {
+  const id = String(req.params.id);
   const existing = await prisma.scout.findFirst({
-    where: { id: req.params.id, userId: req.userId },
+    where: { id, userId: req.userId },
   });
   if (!existing) {
     res.status(404).json({ error: "Scout not found" });
@@ -62,7 +64,7 @@ scoutsRouter.put("/:id", async (req: AuthRequest, res: Response) => {
   }
 
   const scout = await prisma.scout.update({
-    where: { id: req.params.id },
+    where: { id },
     data: {
       industry,
       region,
@@ -74,14 +76,15 @@ scoutsRouter.put("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 scoutsRouter.delete("/:id", async (req: AuthRequest, res: Response) => {
+  const id = String(req.params.id);
   const existing = await prisma.scout.findFirst({
-    where: { id: req.params.id, userId: req.userId },
+    where: { id, userId: req.userId },
   });
   if (!existing) {
     res.status(404).json({ error: "Scout not found" });
     return;
   }
 
-  await prisma.scout.delete({ where: { id: req.params.id } });
+  await prisma.scout.delete({ where: { id } });
   res.status(204).send();
 });

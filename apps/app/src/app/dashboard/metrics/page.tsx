@@ -87,6 +87,14 @@ export default function MetricsPage() {
     fullTitle: m.tender.title,
   }));
 
+  const campaignChartData = metrics.campaigns.items.map((c) => ({
+    name: c.name.length > 18 ? c.name.slice(0, 18) + "..." : c.name,
+    sent: c.sent,
+    replies: c.replies,
+    opens: c.opens,
+    fullName: c.name,
+  }));
+
   return (
     <div className="space-y-6">
       <div>
@@ -142,6 +150,63 @@ export default function MetricsPage() {
           <CardContent>
             <p className="text-3xl font-bold text-zinc-100">
               {metrics.user.matches.avgScore.toFixed(1)}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Campaign Metrics */}
+      <div>
+        <h3 className="text-lg font-semibold text-zinc-200">Campaigns</h3>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-zinc-400">Total Campaigns</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-zinc-100">
+              {metrics.campaigns.total}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-zinc-400">Emails Sent</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-zinc-100">
+              {metrics.campaigns.sent.toLocaleString()}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-zinc-400">Reply Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-lime-400">
+              {metrics.campaigns.replyRate}%
+            </p>
+            <p className="mt-1 text-xs text-zinc-500">
+              {metrics.campaigns.replies} replies
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-zinc-400">Open Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-cyan-400">
+              {metrics.campaigns.openRate}%
+            </p>
+            <p className="mt-1 text-xs text-zinc-500">
+              {metrics.campaigns.opens} opens
             </p>
           </CardContent>
         </Card>
@@ -242,7 +307,7 @@ export default function MetricsPage() {
                         fontSize: "13px",
                         color: "#f4f4f5",
                       }}
-                      formatter={(value: number) => [`${value}`, "Score"]}
+                      formatter={(value) => [`${value}`, "Score"]}
                       labelFormatter={(label) =>
                         topMatchesData.find((m) => m.name === label)
                           ?.fullTitle ?? label
@@ -260,6 +325,108 @@ export default function MetricsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Campaign breakdown chart */}
+      {campaignChartData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Campaign Performance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={campaignChartData}
+                  margin={{ left: 8, right: 8 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fill: "#a1a1aa", fontSize: 11 }}
+                    axisLine={{ stroke: "#3f3f46" }}
+                    tickLine={false}
+                    interval={0}
+                    angle={-20}
+                    textAnchor="end"
+                    height={50}
+                  />
+                  <YAxis
+                    tick={{ fill: "#a1a1aa", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#18181b",
+                      border: "1px solid #3f3f46",
+                      borderRadius: "8px",
+                      fontSize: "13px",
+                      color: "#f4f4f5",
+                    }}
+                    labelFormatter={(label) =>
+                      campaignChartData.find((c) => c.name === label)
+                        ?.fullName ?? label
+                    }
+                  />
+                  <Bar dataKey="sent" name="Sent" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="opens" name="Opens" fill="#22d3ee" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="replies" name="Replies" fill="#a3e635" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Campaign table */}
+      {metrics.campaigns.items.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Campaign Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-zinc-800 text-left text-xs text-zinc-500">
+                    <th className="pb-2 pr-4 font-medium">Campaign</th>
+                    <th className="pb-2 pr-4 font-medium text-right">Sent</th>
+                    <th className="pb-2 pr-4 font-medium text-right">Opens</th>
+                    <th className="pb-2 pr-4 font-medium text-right">Replies</th>
+                    <th className="pb-2 pr-4 font-medium text-right">Open Rate</th>
+                    <th className="pb-2 font-medium text-right">Reply Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {metrics.campaigns.items.map((c) => (
+                    <tr
+                      key={c.id}
+                      className="border-b border-zinc-800/50 last:border-0"
+                    >
+                      <td className="py-2.5 pr-4 text-zinc-200">{c.name}</td>
+                      <td className="py-2.5 pr-4 text-right text-zinc-300">
+                        {c.sent.toLocaleString()}
+                      </td>
+                      <td className="py-2.5 pr-4 text-right text-zinc-300">
+                        {c.opens.toLocaleString()}
+                      </td>
+                      <td className="py-2.5 pr-4 text-right text-zinc-300">
+                        {c.replies.toLocaleString()}
+                      </td>
+                      <td className="py-2.5 pr-4 text-right">
+                        <span className="text-cyan-400">{c.openRate}%</span>
+                      </td>
+                      <td className="py-2.5 text-right">
+                        <span className="text-lime-400">{c.replyRate}%</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {metrics.user.matches.recent.length > 0 && (
         <Card>

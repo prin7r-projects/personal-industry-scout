@@ -56,6 +56,29 @@ export interface TenderMatch {
   createdAt: string;
 }
 
+export interface CampaignSummary {
+  id: string;
+  name: string;
+  sent: number;
+  replies: number;
+  opens: number;
+  clicks: number;
+  replyRate: number;
+  openRate: number;
+  createdAt: string;
+}
+
+export interface CampaignMetrics {
+  total: number;
+  sent: number;
+  replies: number;
+  opens: number;
+  clicks: number;
+  replyRate: number;
+  openRate: number;
+  items: CampaignSummary[];
+}
+
 export interface DashboardMetrics {
   tenders: {
     total: number;
@@ -71,6 +94,7 @@ export interface DashboardMetrics {
       top: TenderMatch[];
     };
   };
+  campaigns: CampaignMetrics;
 }
 
 export interface Bot {
