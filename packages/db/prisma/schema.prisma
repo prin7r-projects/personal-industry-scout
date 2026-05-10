@@ -206,8 +206,24 @@ model User {
 
   ownedWorkspaces Workspace[]
   assets          Asset[]
+  scoutConfigs    ScoutConfig[]
 
   @@map("users")
+}
+
+model ScoutConfig {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  industry  String
+  region    String
+  signals   Json     @default("[]")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("scout_configs")
 }
 
 model Workspace {
