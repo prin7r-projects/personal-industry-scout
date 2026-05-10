@@ -15,3 +15,5 @@ market-research-on-demand/
 dist/
 *.db
 *.db-journal
+brassmark/
+paperclip/
