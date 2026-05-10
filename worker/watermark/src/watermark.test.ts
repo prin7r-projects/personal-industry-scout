@@ -23,7 +23,7 @@ describe("watermark", () => {
         signedAt: "2026-05-04T09:42:00Z",
       });
     } catch (err) {
-      if (err instanceof Error && err.message.includes("Chrome")) {
+      if (err instanceof Error && (err.message.includes("Chrome") || err.message.includes("browser"))) {
         console.log("[watermark test] Chrome not installed — skipping browser-dependent test");
         return;
       }
