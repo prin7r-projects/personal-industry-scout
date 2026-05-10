@@ -14,3 +14,5 @@ docs/screenshots/.tmp/
 dist/
 *.db
 *.db-journal
+brassmark/
+paperclip/
