@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { fetchBriefsFromNotion } from "../src/sync.js";
 
 describe("sync_notion", () => {
-  it("fetchBriefsFromNotion returns empty array with invalid token", async () => {
+  it("fetchBriefsFromNotion returns empty array with invalid token", { timeout: 15000 }, async () => {
     // Without valid Notion credentials, the function should throw
     await expect(
       fetchBriefsFromNotion("invalid-token", "invalid-db-id")
