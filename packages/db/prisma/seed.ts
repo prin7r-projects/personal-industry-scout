@@ -2,6 +2,14 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+function getCurrentIsoWeek(): number {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const days = Math.floor((now.getTime() - start.getTime()) / 86400000);
+  const week = Math.ceil((days + start.getDay() + 1) / 7);
+  return now.getFullYear() * 100 + week;
+}
+
 async function main() {
   console.log("🌱 Seeding database…");
 
@@ -62,11 +70,11 @@ async function main() {
     create: {
       id: "00000000-0000-0000-0000-000000000100",
       industry: "vertical-saas",
-      isoweek: 202619,
+      isoweek: getCurrentIsoWeek(),
       scoutId: scout.id,
       status: "signed",
-      signedAt: new Date("2026-05-04T09:42:00Z"),
-      bodyMd: `# Vertical SaaS — Week 19, 2026
+      signedAt: new Date(),
+      bodyMd: `# Vertical SaaS — Week ${getCurrentIsoWeek() % 100}, ${Math.floor(getCurrentIsoWeek() / 100)}
 
 ## Deal
 ServiceTitan closed a \$120M growth round at a flat valuation of \$9.5B. The round was led by Insight Partners with participation from existing investors. The capital will fund expansion into adjacent verticals including HVAC and plumbing supply chain.
