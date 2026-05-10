@@ -214,14 +214,14 @@ de-risk. FAQ closes the last objection.
 Quality gates (every checkbox in playbook §D):
 - [x] DESIGN.md present at root with all 15 sections
 - [x] ShadCN baseline followed; exception in §3 documented
-- [ ] Desktop screenshot at `docs/screenshots/landing-desktop.png` (captured at deploy time)
-- [ ] Mobile screenshot at `docs/screenshots/landing-mobile.png` (captured at deploy time)
-- [ ] Both linked here in §13 and embedded in `README.md`
+- [x] Desktop screenshot at `docs/screenshots/landing-desktop.png` (captured at deploy time)
+- [x] Mobile screenshot at `docs/screenshots/landing-mobile.png` (captured at deploy time)
+- [x] Both linked here in §13 and embedded in `README.md`
 - [x] No text overlap or overflow at 320 / 768 / 1024 / 1440
 - [x] Keyboard focus visible on all interactive elements
 - [x] All images have meaningful `alt` (or `aria-hidden` if decorative)
 - [x] All copy is real (no Lorem ipsum, no TODO strings)
-- [ ] `curl -sI` returns HTTP/2 200 with valid LE cert (verified at deploy)
+- [x] `curl -sI` returns HTTP/2 200 with valid LE cert (verified at deploy)
 - [ ] NOWPayments CTA produces a live unpaid hosted invoice (verified at deploy)
 
 ## 13. Screenshots and verification artifacts
