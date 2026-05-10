@@ -1,4 +1,5 @@
 export { PrismaClient } from "@prisma/client";
+export type { Prisma } from "@prisma/client";
 
 // Re-export the generated client as a singleton
 import { PrismaClient } from "@prisma/client";

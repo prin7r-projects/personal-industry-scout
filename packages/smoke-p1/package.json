@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "smoke": "tsx src/smoke.ts"
+    "smoke": "tsx src/smoke.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@pis/db": "workspace:*",

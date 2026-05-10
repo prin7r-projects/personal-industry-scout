@@ -117,7 +117,7 @@ export async function runDelivery(): Promise<DeliveryResult[]> {
     console.log(`[deliver] Running for ISO week ${currentWeek}`);
 
     // Find all active subscriptions
-    let subscriptions: Awaited<ReturnType<typeof prisma.subscription.findMany>>;
+    let subscriptions;
     try {
       subscriptions = await prisma.subscription.findMany({
         where: { status: "active" },
