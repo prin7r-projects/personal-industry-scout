@@ -15,6 +15,5 @@ PIS_DIR=/opt/prin7r-deploys/personal-industry-scout
 # tender_intake — every 6 hours, fetches open tenders from configured sources
 0 0,6,12,18 * * * cd $PIS_DIR && docker compose --profile workers run --rm worker-tender-intake
 
-# scout_signals — daily at 02:00 UTC, runs once per active scout
-# Replace <scout-id> with each active scout's UUID or loop over a list.
-0 2 * * * cd $PIS_DIR && docker compose --profile workers run --rm -e SCOUT_ID=<scout-id> worker-scout-signals
+# scout_signals — daily at 02:00 UTC, iterates over all active scouts
+0 2 * * * cd $PIS_DIR && docker compose --profile workers run --rm worker-scout-signals --all
