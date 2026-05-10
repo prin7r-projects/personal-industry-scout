@@ -222,7 +222,7 @@ Quality gates (every checkbox in playbook §D):
 - [x] All images have meaningful `alt` (or `aria-hidden` if decorative)
 - [x] All copy is real (no Lorem ipsum, no TODO strings)
 - [x] `curl -sI` returns HTTP/2 200 with valid LE cert (verified at deploy)
-- [ ] NOWPayments CTA produces a live unpaid hosted invoice (verified at deploy)
+- [x] NOWPayments CTA produces a live unpaid hosted invoice (verified at deploy)
 
 ## 13. Screenshots and verification artifacts
 
