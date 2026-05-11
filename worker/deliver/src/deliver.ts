@@ -11,6 +11,7 @@
 
 import { PrismaClient } from "@pis/db";
 import { generateWatermarkedPdf, type WatermarkInput } from "@pis/worker-watermark";
+import { sendWeeklyBrief } from "@pis/postmark";
 import { randomUUID as uuidv4 } from "crypto";
 
 // ── Types ──
@@ -56,54 +57,6 @@ async function uploadToB2(
   // For Phase 1, we stub this — real B2 integration comes in Phase 2.
   console.log(`  [B2] Uploading ${pdfBuffer.length} bytes to ${bucketName}/${watermarkUuid}.pdf`);
   return `https://f004.backblazeb2.com/file/${bucketName}/${watermarkUuid}.pdf`;
-}
-
-// ── Postmark send stub ──
-
-async function sendDeliveryEmail(
-  to: string,
-  pdfUrl: string | null,
-  industry: string,
-  weekLabel: string,
-  scoutName: string
-): Promise<{ ok: boolean; error?: string }> {
-  const token = process.env.POSTMARK_SERVER_TOKEN;
-
-  if (!token) {
-    console.log(`  [Postmark stub] To: ${to}, Industry: ${industry}, PDF: ${pdfUrl}`);
-    return { ok: true };
-  }
-
-  // Real Postmark send
-  try {
-    const res = await fetch("https://api.postmarkapp.com/email/withTemplate", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "X-Postmark-Server-Token": token,
-      },
-      body: JSON.stringify({
-        From: "Personal Industry Scout <brief@personalindustryscout.com>",
-        To: to,
-        TemplateAlias: "weekly-brief",
-        TemplateModel: {
-          pdf_url: pdfUrl || "",
-          industry,
-          week_label: weekLabel,
-          scout_name: scoutName,
-          product_name: "Personal Industry Scout",
-        },
-        MessageStream: "outbound",
-      }),
-    });
-
-    if (res.ok) return { ok: true };
-    const data = await res.json();
-    return { ok: false, error: `Postmark: ${data.Message || res.statusText}` };
-  } catch (err) {
-    return { ok: false, error: `Postmark error: ${err instanceof Error ? err.message : String(err)}` };
-  }
 }
 
 // ── Main delivery function ──
@@ -230,9 +183,9 @@ export async function runDelivery(): Promise<DeliveryResult[]> {
           }
 
           // Send email
-          const emailResult = await sendDeliveryEmail(
+          const emailResult = await sendWeeklyBrief(
             subscriber.email,
-            artifactUrl,
+            artifactUrl || "",
             brief.industry,
             weekLabel,
             brief.scout.name

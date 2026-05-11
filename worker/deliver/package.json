@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@pis/db": "workspace:*",
+    "@pis/postmark": "workspace:*",
     "@pis/worker-watermark": "workspace:*",
     "tsx": "^4.19.0"
   },
