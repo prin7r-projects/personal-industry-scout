@@ -83,6 +83,10 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pis_test
 
+      - run: pnpm --filter @pis/db run seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pis_test
+
       - run: pnpm smoke:p1
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pis_test

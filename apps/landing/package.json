@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@pis/db": "workspace:*",
+    "@pis/postmark": "workspace:*",
     "@pis/role-gate": "workspace:*",
     "clsx": "2.1.1",
     "next": "15.1.4",
