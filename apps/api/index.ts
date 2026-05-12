@@ -1,26 +1,30 @@
-const express = require("express");
-const { prisma } = require("@pis/db");
+import express, { Request, Response, NextFunction } from "express";
+import { prisma } from "@pis/db";
 
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = Number(process.env.PORT) || 3002;
 
 app.use(express.json());
 
-function sendError(res, status, message) {
+function sendError(res: Response, status: number, message: string) {
   return res.status(status).json({ error: message });
 }
 
-function isNonEmptyString(value) {
+function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function isUuid(value) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    value
-  );
+function isUuid(value: unknown): value is string {
+  return typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
-function normalizeScoutPayload(body) {
+interface ScoutPayload {
+  industry?: unknown;
+  region?: unknown;
+  signals?: unknown;
+}
+
+function normalizeScoutPayload(body: ScoutPayload | undefined) {
   const industry = typeof body?.industry === "string" ? body.industry.trim() : "";
   const region = typeof body?.region === "string" ? body.region.trim() : "";
 
@@ -28,18 +32,26 @@ function normalizeScoutPayload(body) {
     return null;
   }
 
-  const signals = body.signals.map((signal) =>
+  const signals = body.signals.map((signal: unknown) =>
     typeof signal === "string" ? signal.trim() : signal
   );
 
-  if (!signals.every((signal) => isNonEmptyString(signal))) {
+  if (!signals.every((signal: unknown) => isNonEmptyString(signal))) {
     return null;
   }
 
-  return { industry, region, signals };
+  return { industry, region, signals: signals as string[] };
 }
 
-async function authenticateCustomer(req, res, next) {
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { id: string };
+    }
+  }
+}
+
+async function authenticateCustomer(req: Request, res: Response, next: NextFunction) {
   try {
     const configuredKey = process.env.CUSTOMER_API_KEY;
     const authHeader = req.get("authorization") || "";
@@ -62,28 +74,28 @@ async function authenticateCustomer(req, res, next) {
       return sendError(res, 401, "Unauthorized.");
     }
 
-    req.user = user;
+    req.user = { id: user.id };
     return next();
   } catch (error) {
     return next(error);
   }
 }
 
-app.get("/health", (_req, res) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
 
-app.get("/api", (_req, res) => {
+app.get("/api", (_req: Request, res: Response) => {
   res.json({
     ok: true,
     endpoints: ["/health", "/api/scouts"],
   });
 });
 
-app.get("/api/scouts", authenticateCustomer, async (req, res, next) => {
+app.get("/api/scouts", authenticateCustomer, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const scouts = await prisma.scoutConfig.findMany({
-      where: { userId: req.user.id },
+      where: { userId: req.user!.id },
       orderBy: { updatedAt: "desc" },
     });
 
@@ -93,7 +105,7 @@ app.get("/api/scouts", authenticateCustomer, async (req, res, next) => {
   }
 });
 
-app.post("/api/scouts", authenticateCustomer, async (req, res, next) => {
+app.post("/api/scouts", authenticateCustomer, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const payload = normalizeScoutPayload(req.body);
     if (!payload) {
@@ -102,7 +114,7 @@ app.post("/api/scouts", authenticateCustomer, async (req, res, next) => {
 
     const scout = await prisma.scoutConfig.create({
       data: {
-        userId: req.user.id,
+        userId: req.user!.id,
         industry: payload.industry,
         region: payload.region,
         signals: payload.signals,
@@ -115,7 +127,7 @@ app.post("/api/scouts", authenticateCustomer, async (req, res, next) => {
   }
 });
 
-async function updateScoutConfig(req, res, next) {
+async function updateScoutConfig(req: Request, res: Response, next: NextFunction) {
   try {
     if (!isUuid(req.params.id)) {
       return sendError(res, 404, "Scout config not found.");
@@ -129,7 +141,7 @@ async function updateScoutConfig(req, res, next) {
     const existing = await prisma.scoutConfig.findFirst({
       where: {
         id: req.params.id,
-        userId: req.user.id,
+        userId: req.user!.id,
       },
     });
 
@@ -155,7 +167,7 @@ async function updateScoutConfig(req, res, next) {
 app.put("/api/scouts/:id", authenticateCustomer, updateScoutConfig);
 app.patch("/api/scouts/:id", authenticateCustomer, updateScoutConfig);
 
-app.use((error, _req, res, _next) => {
+app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error(error);
   return sendError(res, 500, "Internal server error.");
 });

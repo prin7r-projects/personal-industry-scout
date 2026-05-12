@@ -1,19 +1,17 @@
-const express = require("express");
-const { marked } = require("marked");
-const { prisma } = require("@pis/db");
+import express, { Request, Response, NextFunction } from "express";
+import { marked } from "marked";
+import { prisma } from "@pis/db";
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
 app.use(express.json());
 
-app.get("/health", (_req, res) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "healthy" });
 });
 
-// ── Template listing ────────────────────────────────────────────
-
-app.get("/app/templates", async (_req, res, next) => {
+app.get("/app/templates", async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const briefs = await prisma.brief.findMany({
       orderBy: [{ isoweek: "desc" }, { industry: "asc" }],
@@ -26,12 +24,10 @@ app.get("/app/templates", async (_req, res, next) => {
   }
 });
 
-// ── Template detail page ────────────────────────────────────────
-
-app.get("/app/templates/:id", async (req, res, next) => {
+app.get("/app/templates/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const brief = await prisma.brief.findUnique({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       include: {
         scout: true,
         citations: { orderBy: { citeId: "asc" } },
@@ -51,9 +47,7 @@ app.get("/app/templates/:id", async (req, res, next) => {
   }
 });
 
-// ── Benchmark catalog ───────────────────────────────────────────
-
-app.get("/app/benchmarks", async (_req, res, next) => {
+app.get("/app/benchmarks", async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const benchmarks = await prisma.benchmark.findMany({
       orderBy: [{ category: "asc" }, { name: "asc" }],
@@ -68,9 +62,7 @@ app.get("/app/benchmarks", async (_req, res, next) => {
   }
 });
 
-// ── Schedule page ───────────────────────────────────────────────
-
-app.get("/app/schedule", async (_req, res, next) => {
+app.get("/app/schedule", async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const tickets = await prisma.ticket.findMany({
       where: {
@@ -86,13 +78,13 @@ app.get("/app/schedule", async (_req, res, next) => {
   }
 });
 
-app.post("/app/schedule/reorder", async (req, res, next) => {
+app.post("/app/schedule/reorder", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { ids } = req.body;
     if (!Array.isArray(ids)) return res.status(400).json({ error: "ids array required" });
 
     await prisma.$transaction(
-      ids.map((id, i) =>
+      ids.map((id: string, i: number) =>
         prisma.ticket.update({ where: { id }, data: { sortOrder: i } })
       )
     );
@@ -103,10 +95,10 @@ app.post("/app/schedule/reorder", async (req, res, next) => {
   }
 });
 
-app.post("/app/schedule/:id/pause", async (req, res, next) => {
+app.post("/app/schedule/:id/pause", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const ticket = await prisma.ticket.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       data: { status: "paused" },
     });
     res.json(ticket);
@@ -115,10 +107,10 @@ app.post("/app/schedule/:id/pause", async (req, res, next) => {
   }
 });
 
-app.post("/app/schedule/:id/resume", async (req, res, next) => {
+app.post("/app/schedule/:id/resume", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const ticket = await prisma.ticket.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       data: { status: "queued", scheduledAt: null },
     });
     res.json(ticket);
@@ -127,11 +119,11 @@ app.post("/app/schedule/:id/resume", async (req, res, next) => {
   }
 });
 
-app.post("/app/schedule/:id/schedule", async (req, res, next) => {
+app.post("/app/schedule/:id/schedule", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { scheduledAt } = req.body;
     const ticket = await prisma.ticket.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       data: { status: "scheduled", scheduledAt: scheduledAt ? new Date(scheduledAt) : new Date() },
     });
     res.json(ticket);
@@ -140,10 +132,10 @@ app.post("/app/schedule/:id/schedule", async (req, res, next) => {
   }
 });
 
-app.post("/app/schedule/:id/send", async (req, res, next) => {
+app.post("/app/schedule/:id/send", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const ticket = await prisma.ticket.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       data: { status: "sending" },
     });
     res.json(ticket);
@@ -152,15 +144,11 @@ app.post("/app/schedule/:id/send", async (req, res, next) => {
   }
 });
 
-// ── Start ───────────────────────────────────────────────────────
-
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`saltrun listening on port ${PORT}`);
 });
 
-// ── HTML helpers ─────────────────────────────────────────────────
-
-function pageShell(title, body) {
+function pageShell(title: string, body: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -296,7 +284,16 @@ document.querySelectorAll('.tab-trigger').forEach(btn=>{
 </html>`;
 }
 
-function renderTemplateDetail(brief) {
+function renderTemplateDetail(brief: Record<string, unknown> & {
+  status: string;
+  signedAt: string | Date | null;
+  isoweek: number;
+  industry: string;
+  scout: { name: string; industryFocus?: string };
+  bodyMd: string;
+  citations: Array<{ citeId: string; url: string; title: string }>;
+  deliveries: Array<{ channel: string; subscriber: { email: string } }>;
+}): string {
   const statusClass = brief.status === "signed" ? "status-signed" : "status-draft";
   const signedAt = brief.signedAt
     ? new Date(brief.signedAt).toLocaleDateString("en-US", {
@@ -307,7 +304,6 @@ function renderTemplateDetail(brief) {
       })
     : "Not signed";
 
-  // Parse week label
   const weekLabel = `Week ${String(brief.isoweek).slice(-2)}, ${String(brief.isoweek).slice(0, 4)}`;
 
   return `
@@ -366,7 +362,7 @@ function renderTemplateDetail(brief) {
     <div id="roles" class="tab-panel">
       <div class="role-card">
         <div class="role-name">${escapeHtml(brief.scout.name)}</div>
-        <div class="role-meta">Scout &middot; ${escapeHtml(brief.scout.industryFocus)}</div>
+        <div class="role-meta">Scout &middot; ${escapeHtml(brief.scout.industryFocus ?? "")}</div>
         <p style="margin-top:8px;font-size:14px;color:#5C5A55">Authored and signed this brief. Responsible for editorial accuracy and citation verification.</p>
       </div>
 
@@ -398,8 +394,17 @@ function renderTemplateDetail(brief) {
 </div>`;
 }
 
-function renderSchedule(tickets) {
-  const statusLabel = {
+interface Ticket {
+  id: string;
+  status: string;
+  scheduledAt: string | Date | null;
+  openedAt: string | Date;
+  body: string;
+  subscriber: { email: string };
+}
+
+function renderSchedule(tickets: Ticket[]): string {
+  const statusLabel: Record<string, string> = {
     queued: "Queued",
     scheduled: "Scheduled",
     sending: "Sending",
@@ -408,7 +413,7 @@ function renderSchedule(tickets) {
     failed: "Failed",
   };
 
-  const statusClass = {
+  const statusClass: Record<string, string> = {
     queued: "status-queued",
     scheduled: "status-scheduled",
     sending: "status-sending",
@@ -419,7 +424,7 @@ function renderSchedule(tickets) {
 
   const rows = tickets.length === 0
     ? `<tr><td colspan="5" class="empty-cell">No queued or scheduled tickets.</td></tr>`
-    : tickets.map((t, i) => {
+    : tickets.map((t) => {
         const paused = t.status === "paused";
         const isMutable = t.status === "queued" || t.status === "scheduled" || t.status === "paused";
         const scheduledStr = t.scheduledAt
@@ -570,7 +575,14 @@ function renderSchedule(tickets) {
 </script>`;
 }
 
-function renderBenchmarkCatalog(benchmarks) {
+interface BenchmarkWithScores {
+  name: string;
+  description: string;
+  category: string;
+  scores: Array<{ industry: string; value: number; unit: string }>;
+}
+
+function renderBenchmarkCatalog(benchmarks: BenchmarkWithScores[]): string {
   const rows = benchmarks.length === 0
     ? `<tr><td colspan="6" class="empty-cell">No benchmarks seeded.</td></tr>`
     : benchmarks.map((benchmark) => {
@@ -621,13 +633,13 @@ function renderBenchmarkCatalog(benchmarks) {
 </div>`;
 }
 
-function renderScore(score) {
+function renderScore(score: { value: number; unit: string } | undefined): string {
   if (!score) return "—";
   const value = score.unit === "ratio" ? score.value.toFixed(1) : score.value.toFixed(1) + "%";
   return `${value} <span style="color:#8A867E">${escapeHtml(score.unit)}</span>`;
 }
 
-function escapeHtml(str) {
+function escapeHtml(str: string): string {
   return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

@@ -2,15 +2,26 @@
   "name": "@pis/api",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
   "scripts": {
-    "start": "tsx index.js"
+    "start": "tsx index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@pis/db": "workspace:*",
     "express": "4.21.2"
   },
   "devDependencies": {
-    "tsx": "^4.19.0"
+    "@types/express": "^5.0.0",
+    "@types/node": "22.10.5",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
   },
   "packageManager": "pnpm@9.15.4"
 }
