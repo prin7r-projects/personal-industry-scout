@@ -1,9 +1,11 @@
 # Worker: deliver — Monday brief delivery.
 # Triggered via cron on the host: docker compose --profile workers run --rm worker-deliver
 
-FROM node:22-alpine
+FROM node:24-alpine
 
 WORKDIR /app
+
+ENV NODE_ENV=production
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate

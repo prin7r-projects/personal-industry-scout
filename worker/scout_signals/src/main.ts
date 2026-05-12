@@ -12,25 +12,32 @@
  *   BRAVE_API_KEY — Brave Search API subscription token (optional; stubbed if absent)
  */
 
+import { fileURLToPath } from "url";
 import { PrismaClient } from "@pis/db";
 import { fetchSignals } from "./fetch.js";
 import type { FetchResult } from "./fetch.js";
 
+export interface FetchAllResults {
+  results: FetchResult[];
+  failedCount: number;
+}
+
 export async function fetchSignalsForAllScouts(
   prisma: PrismaClient,
   braveApiKey?: string,
-): Promise<FetchResult[]> {
+): Promise<FetchAllResults> {
   const scouts = await prisma.scout.findMany({
     orderBy: { name: "asc" },
   });
 
   if (scouts.length === 0) {
     console.log("[scout_signals] No active scouts found");
-    return [];
+    return { results: [], failedCount: 0 };
   }
 
   console.log(`[scout_signals] Processing ${scouts.length} active scout(s)`);
   const results: FetchResult[] = [];
+  let failedCount = 0;
 
   for (const scout of scouts) {
     try {
@@ -40,13 +47,18 @@ export async function fetchSignalsForAllScouts(
       );
       results.push(result);
     } catch (err) {
+      failedCount += 1;
       console.error(
         `[scout_signals] Failed for ${scout.name}: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }
 
-  return results;
+  if (failedCount > 0) {
+    console.error(`[scout_signals] ${failedCount} scout(s) failed`);
+  }
+
+  return { results, failedCount };
 }
 
 async function main() {
@@ -65,14 +77,14 @@ async function main() {
 
   try {
     if (allMode) {
-      const results = await fetchSignalsForAllScouts(prisma, braveApiKey);
+      const { results, failedCount } = await fetchSignalsForAllScouts(prisma, braveApiKey);
       const totalFetched = results.reduce((s, r) => s + r.total, 0);
       const totalCreated = results.reduce((s, r) => s + r.created, 0);
       const totalSkipped = results.reduce((s, r) => s + r.skipped, 0);
       console.log(
         `[scout_signals] All done — ${totalFetched} fetched, ${totalCreated} created, ${totalSkipped} skipped across ${results.length} scout(s)`,
       );
-      process.exit(0);
+      process.exit(failedCount > 0 ? 1 : 0);
     }
 
     const result = await fetchSignals(prisma, scoutId!, braveApiKey);
@@ -88,6 +100,6 @@ async function main() {
 }
 
 // Only run main when executed directly (not when imported for testing)
-if (process.argv[1]?.includes("main")) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main();
 }

@@ -49,8 +49,9 @@ describe("fetchSignals", () => {
 describe("fetchSignalsForAllScouts", () => {
   it("returns empty array when no active scouts", async () => {
     const prisma = stubPrisma([]);
-    const results = await fetchSignalsForAllScouts(prisma);
+    const { results, failedCount } = await fetchSignalsForAllScouts(prisma);
     expect(results).toEqual([]);
+    expect(failedCount).toBe(0);
   });
 
   it("iterates over all active scouts", async () => {
@@ -59,7 +60,7 @@ describe("fetchSignalsForAllScouts", () => {
       { id: "scout-2", name: "Bob", industryFocus: "Fintech" },
     ]);
 
-    const results = await fetchSignalsForAllScouts(prisma);
+    const { results } = await fetchSignalsForAllScouts(prisma);
     expect(results).toHaveLength(2);
     expect(results[0].scoutId).toBe("scout-1");
     expect(results[1].scoutId).toBe("scout-2");
@@ -70,7 +71,7 @@ describe("fetchSignalsForAllScouts", () => {
       { id: "scout-1", name: "Alice", industryFocus: "" },
     ]);
 
-    const results = await fetchSignalsForAllScouts(prisma);
+    const { results } = await fetchSignalsForAllScouts(prisma);
     expect(results).toHaveLength(1);
     expect(results[0].industry).toBe("");
     expect(results[0].total).toBe(0);

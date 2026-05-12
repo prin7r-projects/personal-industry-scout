@@ -24,13 +24,15 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   const token = process.env.POSTMARK_SERVER_TOKEN;
 
   if (!token) {
-    console.log("── Postmark stub ──");
-    console.log(`  To:       ${params.to}`);
-    console.log(`  Template: ${params.templateAlias}`);
-    console.log(`  Stream:   ${params.messageStream || "outbound"}`);
-    console.log(`  Model:    ${JSON.stringify(params.templateModel)}`);
-    console.log("── End stub ──");
-    return { ok: true, messageId: "stub-" + Date.now() };
+    const error = "POSTMARK_SERVER_TOKEN is not set — emails will not be delivered";
+    console.warn(`── Postmark stub (WARNING) ──`);
+    console.warn(`  ${error}`);
+    console.warn(`  To:       ${params.to}`);
+    console.warn(`  Template: ${params.templateAlias}`);
+    console.warn(`  Stream:   ${params.messageStream || "outbound"}`);
+    console.warn(`  Model:    ${JSON.stringify(params.templateModel)}`);
+    console.warn(`── End stub ──`);
+    return { ok: false, error };
   }
 
   const body = {
