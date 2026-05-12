@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@pis/db": "workspace:*",
+    "@pis/intake-token": "workspace:*",
     "@pis/postmark": "workspace:*",
     "@pis/role-gate": "workspace:*",
     "clsx": "2.1.1",

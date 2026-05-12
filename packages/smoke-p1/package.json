@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@pis/db": "workspace:*",
+    "@pis/intake-token": "workspace:*",
     "@pis/worker-sync-notion": "workspace:*",
     "@pis/worker-watermark": "workspace:*",
     "@pis/worker-deliver": "workspace:*"

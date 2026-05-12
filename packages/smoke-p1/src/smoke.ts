@@ -19,40 +19,7 @@
 import { PrismaClient } from "@pis/db";
 import { generateWatermarkedPdf } from "@pis/worker-watermark";
 import { runDelivery } from "@pis/worker-deliver";
-import { createHmac } from "crypto";
-
-// ── Inline intake token helpers (mirrors apps/landing/lib/intake-token.ts) ──
-
-const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-function getSecret(): string {
-  const secret = process.env.INTAKE_TOKEN_SECRET;
-  if (!secret) {
-    throw new Error("INTAKE_TOKEN_SECRET environment variable is not set");
-  }
-  return secret;
-}
-
-function generateIntakeToken(subscriberId: string): string {
-  const secret = getSecret();
-  const expiresAt = Date.now() + TOKEN_TTL_MS;
-  const payload = `${subscriberId}.${expiresAt}`;
-  const hmac = createHmac("sha256", secret).update(payload).digest("hex").slice(0, 16);
-  return `${payload}.${hmac}`;
-}
-
-function verifyIntakeToken(token: string): { subscriberId: string } | null {
-  const secret = getSecret();
-  const parts = token.split(".");
-  if (parts.length !== 3) return null;
-  const [subscriberId, expiresAtStr, providedHmac] = parts;
-  const expiresAt = parseInt(expiresAtStr, 10);
-  if (isNaN(expiresAt) || Date.now() > expiresAt) return null;
-  const payload = `${subscriberId}.${expiresAt}`;
-  const expectedHmac = createHmac("sha256", secret).update(payload).digest("hex").slice(0, 16);
-  if (providedHmac !== expectedHmac) return null;
-  return { subscriberId };
-}
+import { generateIntakeToken, verifyIntakeToken } from "@pis/intake-token";
 
 // ── Inline Postmark stub (mirrors apps/landing/lib/postmark.ts) ──
 

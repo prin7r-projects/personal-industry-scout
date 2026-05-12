@@ -49,6 +49,9 @@ importers:
       '@pis/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@pis/intake-token':
+        specifier: workspace:*
+        version: link:../../packages/intake-token
       '@pis/postmark':
         specifier: workspace:*
         version: link:../../packages/postmark
@@ -115,6 +118,15 @@ importers:
         specifier: ^5.7.0
         version: 5.7.3
 
+  packages/intake-token:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.10.5
+      typescript:
+        specifier: ^5.7.0
+        version: 5.7.3
+
   packages/postmark:
     devDependencies:
       '@types/node':
@@ -135,6 +147,9 @@ importers:
       '@pis/db':
         specifier: workspace:*
         version: link:../db
+      '@pis/intake-token':
+        specifier: workspace:*
+        version: link:../intake-token
       '@pis/worker-deliver':
         specifier: workspace:*
         version: link:../../worker/deliver

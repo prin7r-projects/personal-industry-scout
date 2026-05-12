@@ -2,6 +2,13 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const citationIds: Record<string, string> = {
+  "C-2026W19-0001": "00000000-0000-0000-0000-000000000101",
+  "C-2026W19-0002": "00000000-0000-0000-0000-000000000102",
+  "C-2026W19-0003": "00000000-0000-0000-0000-000000000103",
+  "C-2026W19-0004": "00000000-0000-0000-0000-000000000104",
+};
+
 function getCurrentIsoWeek(): number {
   const now = new Date();
   const start = new Date(now.getFullYear(), 0, 1);
@@ -294,13 +301,6 @@ The EU's Data Act came into force on May 2, requiring vertical SaaS vendors serv
 
   console.log("✅ Seed complete.");
 }
-
-const citationIds: Record<string, string> = {
-  "C-2026W19-0001": "00000000-0000-0000-0000-000000000101",
-  "C-2026W19-0002": "00000000-0000-0000-0000-000000000102",
-  "C-2026W19-0003": "00000000-0000-0000-0000-000000000103",
-  "C-2026W19-0004": "00000000-0000-0000-0000-000000000104",
-};
 
 main()
   .catch((e) => {
