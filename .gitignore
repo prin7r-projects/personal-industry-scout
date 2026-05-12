@@ -18,3 +18,4 @@ dist/
 brassmark/
 paperclip/
 .git-corrupt/
+.git-broken/
