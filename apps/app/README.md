@@ -1,18 +1,26 @@
 # `apps/app/` — Subscriber Console
 
-Stubbed in Wave 2. The subscriber console (login, account, brief archive,
-ad-hoc question thread, watchlist editor, scout chat) ships in a later wave.
+Express server providing the subscriber dashboard. Deployed via
+`docker-compose.yml` with Traefik routing at
+`app.personal-industry-scout.prin7r.com`.
 
-## Planned stack
+## What's live
 
-- **Open-SaaS** (Wasp) fork — auth, billing, sessions, dashboard shell.
-- **Postgres** for subscriptions, briefs, watchlists, source-doc audit trail.
-- **NOWPayments hosted invoice + IPN** for monthly recurring (already wired in
-  `apps/landing/app/api/checkout/nowpayments` and `…/webhooks/nowpayments`).
-  When `apps/app/` ships, the IPN handler in `apps/landing` flips from
-  `console.log` audit to a DB write against `subscriptions.last_paid_at`.
-- **Telegram bot** for the Concierge tier's flash-note channel.
+- Template listing and detail pages (`/app/templates`)
+- Benchmark catalog (`/app/benchmarks`)
+- Schedule management with drag-and-drop reorder (`/app/schedule`)
+- Full HTML rendering with brand styling (Source Serif 4, Inter,
+  JetBrains Mono; oxblood accent)
 
-For now this is a placeholder — the landing page handles all subscriber
-acquisition and the desk fulfils briefs manually until volume justifies the
-build.
+## Stack
+
+- Express 4.21
+- `@pis/db` (Prisma client)
+- `marked` for Markdown rendering
+- `tsx` for running TypeScript at runtime
+
+## Planned rebuild
+
+The implementation plan calls for an **Open-SaaS** (Wasp) fork in Phase 2.
+The current Express app serves as the temporary console until volume
+justifies that migration.
