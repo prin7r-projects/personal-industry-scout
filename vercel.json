@@ -12,7 +12,7 @@
   "git": {
     "deploymentEnabled": {
       "staging": true,
-      "main": false
+      "main": true
     }
   }
 }
